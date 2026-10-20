@@ -128,3 +128,14 @@ documentation/Graphify publication updates.
 This was a focused local adversarial review with actual remote regression evidence.
 The separate GitHub Codex review request returned no review; it is not represented
 as independent approval. Code integration is distinct from release or deployment.
+
+## Windows checkout bytes
+
+REVIEW-04: `git -c core.autocrlf=true cat-file --filters HEAD:<example>` changed
+all nineteen manifest payload hashes on a fresh-checkout simulation. The current
+worktree retained LF bytes, so ordinary local tests did not expose this portability
+bug. Narrow `-text` attributes now preserve the recorded schema/fixture blobs
+exactly across platforms. A read-only Git checkout-filter regression tests all
+nineteen manifest hashes with Windows conversion enabled. Fixture/schema bytes
+and the published manifest remain unchanged. The corrected pure suite has141 cases;
+the extra checkout test is additional to the final-application-code results above.

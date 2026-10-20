@@ -6,7 +6,8 @@
   "findings": {
     "REVIEW-01": "Resolved: positive CI service/container/volume/physical/live proof before migrations and pooled fixture writes. Retained local profile preserved.",
     "REVIEW-02": "Resolved: matching retained revision evidence is used for adjacent full states without embedded evidence; missing/conflicting evidence still rejects.",
-    "REVIEW-03": "Resolved: crash-test backend EOF cleanup is awaited with the existing bounded lock-release pattern; production worker and budgets unchanged."
+    "REVIEW-03": "Resolved: crash-test backend EOF cleanup is awaited with the existing bounded lock-release pattern; production worker and budgets unchanged.",
+    "REVIEW-04": "Resolved: narrow Git -text attributes preserve the normative schema and nineteen payload hashes under Windows checkout conversion. Read-only checkout-filter regression passes."
   },
   "local_pure_passed": 140,
   "local_pure_failed": 0,
@@ -191,7 +192,9 @@
     "tests/test_disposable_postgres.py": "45d73876dd15789990ab376967110a5da3944918464f06832ba9fdcb756a33b9",
     "tests/test_sync_worker.py": "1efd602900c107305389e2126490a80d6a4a38cb8a220381d75029d77305aec0",
     "tests/test_tsetmc_http.py": "2786ad66d7dd2cbdcf9dfdf24ea2a27bd19fa6b09492e68a4c30f1230703d56a",
-    "tests/test_tsetmc_ingestion.py": "0596370a9feb24c247944bfabb9ee168f31eba876c0b6c1cbff5125a137e3720"
+    "tests/test_tsetmc_ingestion.py": "0596370a9feb24c247944bfabb9ee168f31eba876c0b6c1cbff5125a137e3720",
+    ".gitattributes": "aa7dc7a71026773f33dd0bf1d33c3401dbcc6aeb1726e60ff2afed3310f7fb50",
+    "tests/test_tsetmc_wire.py": "7cc9324e9f95ec839c5c8559a293f5bf58cdd41a2d1bba2a369006b9ed4e129d"
   },
   "earlier_failures": [
     {
@@ -213,5 +216,11 @@
   ],
   "local_databases_or_services_changed": false,
   "production_changes": false,
-  "recommendation": "Ready for code integration after current PR checks; not release/deployment readiness."
+  "recommendation": "Ready for code integration after current PR checks; not release/deployment readiness.",
+  "checkout_verification": {
+    "before_windows_hash_mismatches": 19,
+    "after_windows_hash_mismatches": 0,
+    "latest_pure_passed": 141,
+    "first_test_harness_attempt": "140 passed/1 failed: used an absolute path in the Git object name; corrected to repository-relative path. Log retained."
+  }
 }

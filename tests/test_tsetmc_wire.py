@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -134,6 +135,18 @@ def test_all_published_examples(entry):
             )
     if entry["definition"] == "ReconcileResponse":
         assert digest(value["rows"]) == value["page_sha256"]
+
+
+def test_contract_payloads_survive_windows_checkout_filters():
+    root = Path(__file__).resolve().parents[1]
+    for entry in MANIFEST["examples"]:
+        path = (DIRECTORY / entry["file"]).relative_to(root).as_posix()
+        body = subprocess.check_output(
+            ["git", "-c", "core.autocrlf=true", "cat-file", "--filters", "HEAD:" + path],
+            cwd=root,
+            timeout=10,
+        )
+        assert hashlib.sha256(body).hexdigest() == entry["sha256"]
 
 
 @pytest.mark.parametrize(

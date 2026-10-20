@@ -1,4 +1,4 @@
-# Current state ? 2026-10-20, M3B-2 integration checkpoint
+# Current state - 2026-10-20, M3B-2 integration checkpoint
 
 Reviewed application head `77381423b596bd3fe0fc7e9ae1710139b32754f6`, PR #3:
 https://github.com/alpha-lacrim/tradingview-marketdata/pull/3 . The owner authorized
@@ -20,6 +20,11 @@ Both guarded fresh upgrade, downgrade and re-upgrade steps passed. These are
 repeated full runs, not additive unique-test totals. Local fake-only140, full
 Ruff/format, strict mypy61 and lock checks also passed. Original failures remain
 retained; passing reruns do not relabel older counts. All252 frozen bytes match.
+
+REVIEW-04 also pins normative schema/fixture bytes with narrow Git attributes:
+Windows autocrlf checkout filters otherwise broke all19 manifest hashes. The
+read-only checkout-filter regression now passes and the pure suite has141 cases.
+This adds one test to the earlier full-code counts above; the PR records final checks.
 
 This is a focused local review plus actual CI evidence. The separate GitHub
 Codex review request returned no review; no independent approval is claimed.
