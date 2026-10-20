@@ -54,6 +54,49 @@ async def test_revision_seed_and_full_state_agree_in_both_orders(
             )
 
 
+@pytest.mark.parametrize(
+    "order",
+    [
+        ("seed", "old", "new"),
+        ("seed", "new", "old"),
+        ("old", "seed", "new"),
+        ("new", "seed", "old"),
+    ],
+)
+async def test_retained_revision_seed_supports_both_full_state_orders(tsetmc, order):  # noqa: F811
+    t = tsetmc
+    batches = {"seed": t.batch("revision-seed"), "old": t.batch(), "new": t.batch("correction")}
+    batches["new"]["records"][0]["event_type"] = "daily.seed"
+    batches["new"]["records"][0]["observation"]["revision_evidence"] = None
+    for name in order:
+        await commit(t, batches[name])
+    async with t.store.connection() as c:
+        assert await c.fetchval("SELECT count(*) FROM company_tsetmc.daily_states") == 2
+        assert await c.fetchval("SELECT count(*) FROM company_tsetmc.daily_revisions") == 1
+        assert await c.fetchval("SELECT count(*) FROM ingest_observations") == 3
+        assert (
+            await c.fetchval("SELECT financial_hash FROM company_tsetmc.daily_records")
+            == (batches["new"]["records"][0]["observation"]["financial_hash"])
+        )
+
+
+@pytest.mark.parametrize("first", ["old", "new"])
+async def test_full_state_adjacency_still_requires_genuine_revision_evidence(tsetmc, first):  # noqa: F811
+    t = tsetmc
+    batches = {"old": t.batch(), "new": t.batch("correction")}
+    batches["new"]["records"][0]["event_type"] = "daily.seed"
+    batches["new"]["records"][0]["observation"]["revision_evidence"] = None
+    await commit(t, batches[first])
+    before = await imported_rows(t.store)
+    last = batches["new" if first == "old" else "old"]
+    with pytest.raises(TsetmcError, match="source_version_conflict"):
+        await commit(t, last)
+    assert await imported_rows(t.store) == before
+    await commit(t, t.batch("revision-seed"))
+    receipt = await commit(t, last)
+    assert await commit(t, last) == receipt
+
+
 def quality_state(t, version, position, code=A):
     value = t.batch(position=position, code=code)
     if version == 2:

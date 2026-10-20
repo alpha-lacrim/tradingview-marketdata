@@ -2184,9 +2184,9 @@
     "semantic_hash": ""
   },
   "src/marketdata/tsetmc_storage.py": {
-    "mtime": 1792503139.6912472,
-    "seen": 1792505201.6069736,
-    "ast_hash": "3b7f2fc988e41b5fe7a5ab83dbb4c297",
+    "mtime": 1792523643.6984296,
+    "seen": 1792523728.8823686,
+    "ast_hash": "d0cc0e24bd6760ab3e2263d4f0127a7d",
     "semantic_hash": ""
   },
   "src/marketdata/tsetmc_wire.py": {
@@ -2670,9 +2670,9 @@
     "semantic_hash": ""
   },
   "tests/test_tsetmc_ingestion.py": {
-    "mtime": 1792503749.1215222,
-    "seen": 1792505201.6160228,
-    "ast_hash": "0b55e0d8dc9a5e5995f5c857b7f968b3",
+    "mtime": 1792523644.2959087,
+    "seen": 1792523728.892367,
+    "ast_hash": "b240e5b1e0f53f59501af45f7afcfb4f",
     "semantic_hash": ""
   },
   "tests/test_tsetmc_migrations.py": {
@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792523243.9807804,
-    "seen": 1792523259.0968819,
-    "ast_hash": "082b3522786132d4fbd08b481a56b033",
+    "mtime": 1792523713.900422,
+    "seen": 1792523728.892367,
+    "ast_hash": "a4b1b4e5c0ba7376449d732f59626699",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3426,9 +3426,9 @@
     "semantic_hash": ""
   },
   "docs/tsetmc-m3b2-ci.md": {
-    "mtime": 1792523243.979765,
-    "seen": 1792523259.1075027,
-    "ast_hash": "ebf6a9a51caf6c75ad6e2a44d96e656d",
+    "mtime": 1792523713.8990574,
+    "seen": 1792523728.9033647,
+    "ast_hash": "d262a75b08a6bee32196666b636ef85f",
     "semantic_hash": ""
   }
 }

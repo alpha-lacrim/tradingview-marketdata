@@ -551,9 +551,11 @@ trading_date=$3""",
             revision,
             min(2**63 - 1, revision + 1),
         )
-        for row in evidence_rows:
-            evidence = parsed(row["payload"])
-            side = "new" if row["financial_revision"] == revision else "old"
+        retained_revisions = {
+            row["financial_revision"]: parsed(row["payload"]) for row in evidence_rows
+        }
+        for number, evidence in retained_revisions.items():
+            side = "new" if number == revision else "old"
             if (observation["financial_hash"], observation["measurements"]) != (
                 evidence[side + "_financial_hash"],
                 evidence[side + "_measurements"],
@@ -591,7 +593,9 @@ trading_date=$3""",
             ):
                 raise TsetmcError("source_version_conflict", 409)
             if int(newer["financial_revision"]) == int(older["financial_revision"]) + 1:
-                evidence = newer["revision_evidence"]
+                evidence = newer["revision_evidence"] or retained_revisions.get(
+                    int(newer["financial_revision"])
+                )
                 if not evidence or (
                     evidence["old_financial_hash"],
                     evidence["old_measurements"],

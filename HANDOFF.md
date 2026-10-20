@@ -1,4 +1,4 @@
-# Current state — 2026-10-20, M3B-2 CI ownership correction
+# Current state — 2026-10-20, M3B-2 pre-merge verification
 
 Published checkpoint `bbef28f5c8e44a2a9f630a097542a42b63f8b319` is on
 `codex/tsetmc-m3b2`; draft PR #3 targets main. Pre-merge scrutiny found REVIEW-01:
@@ -15,6 +15,14 @@ bootstrap test failed because its data-directory field was omitted; corrected.
 No local server/database change. Wait for actual CI results before merging.
 The separate GitHub Codex review request is pending, not an independent approval.
 No release, deployment, production migration, source-system change or new milestone.
+
+Further scrutiny found REVIEW-02: the adjacency comparison rejected full states
+without embedded evidence even when their matching revision seed was retained.
+It now reuses the genuine retained evidence already checked by F01. Before/after
+production-method probes demonstrate rejection then applied/superseded results.
+Six new PostgreSQL cases cover valid orders and rejection/retry without evidence.
+Final CI must include this financial correction before any merge; do not substitute
+the earlier CI-guard-only result. The wire contract and migration remain unchanged.
 
 ## Published implementation and remediation evidence
 

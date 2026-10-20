@@ -62,3 +62,21 @@ recorded after the actual remote run; local fakes are not Linux/Timescale passes
 The workflow uploads JUnit and job ownership metadata even when it fails.
 Application timeouts, financial code, migration 0011, published wire contracts,
 collectors/workers and frozen distributions are unchanged by this correction.
+
+## Additional financial review: retained revision adjacency
+
+REVIEW-02 found a valid-history rejection in the financial adjacency check. A
+full `daily.seed` state may omit embedded revision evidence while a separately
+imported `daily.revision_seed` already proves the matching old/new values.
+Although F01 checked that retained evidence, the later adjacent-state comparison
+required the evidence to be embedded in the newer full state. It rejected both
+arrival orders despite the durable matching seed.
+
+The adjacency check now uses matching retained evidence when the full state
+omits it. It checks the same old measurement/hash against genuine stored evidence;
+it does not fabricate revisions, relax contradiction checks or change the wire
+contract. A direct production-method probe rejected both orders before the
+correction and now returns applied/superseded respectively. Six new PostgreSQL
+cases cover four valid seed/state orders, both missing-evidence rejection orders,
+atomic rejection and exact retry after the genuine seed arrives. Actual database
+results must come from the final CI runs containing these six cases.
