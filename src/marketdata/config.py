@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
     application_role: Literal["api", "ingest", "collector", "combined"] = "api"
+    tsetmc_ingest_enabled: bool = False
+    tsetmc_event_retention_count: int = Field(default=100000, ge=1, le=1000000)
     ingest_credentials_file: Path | None = None
     ingest_max_body_bytes: int = Field(default=2097152, ge=1024, le=2097152)
     ingest_max_records: int = Field(default=500, ge=1, le=500)

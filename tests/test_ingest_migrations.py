@@ -32,7 +32,7 @@ async def test_populated_0007_runtime_upgrade_and_roundtrip(destination, pair): 
             before = {table: await c.fetch(f"SELECT * FROM {table}") for table in tables}
         await migrate(url, "upgrade", "head")
         async with d.store.connection() as c:
-            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
             assert await c.fetchval("SELECT count(*) FROM ingest_request_budgets") == 0
             assert {table: await c.fetch(f"SELECT * FROM {table}") for table in tables} == before
             assert await c.fetchval(

@@ -1229,7 +1229,7 @@ include actual Linux container smoke. The API load command is
 It refuses other DSNs, creates 100 synthetic sources, runs real TCP load and pauses/unpauses
 only the verified disposable database. Never run it concurrently with pytest on the same DB.
 Production uses `compose.production.yaml` and separate mounted DSNs, not dev credentials.
-Root destination schema head is now 0010 (ordered quote snapshots); frozen v1.0 remains 0006.
+Root destination schema head is now 0011 (additive TSETMC destination); frozen v1.0 remains 0006.
 Read docs/fastapi-v1.1-milestone1.md before destination work. API-only readiness does not
 require collector connectivity. Milestone 1 uses compose.v11-m1-test.yaml, task-owned tmpfs
 ports 55945/55946 and database marketdata_v11_m1_test. Milestone 2 adds the ingestion runtime; use compose.v11-m2-test.yaml, project
@@ -1285,7 +1285,7 @@ explicit source identity, decimal serialization, production bearer/CORS configur
 company backend browser authentication and DBA-scoped SELECT-role setup. Validate API
 changes with `compose.batch2-test.yaml` under a separate project, never deployed resources.
 
-Root Alembic head is `0010`; destination migrations never install source capture/worker state. Frozen v1.0 remains exact-`0006`. 0005 adds only a collector
+Root Alembic head is `0011`; destination migrations never install source capture/worker state. Frozen v1.0 remains exact-`0006`. 0005 adds only a collector
 health snapshot table. 0006 adds the
 bounded committed-event journal and transactionally locked cursor clock. `events.py` owns
 append/reconciliation/snapshot fences; `market_stream.py` owns API worker readers/client
@@ -1470,3 +1470,8 @@ suites/install/pipeline serially per cluster because role names are cluster-wide
 image builds during timing-sensitive regression runs; retain any failures and actual reruns.
 Do not label candidate packaging as full genuine99 qualification, site deployment or a live
 legacy collector transition. Follow each versioned package's install/restore/transition guides.
+
+M3B-2 company-only changes and isolated PostgreSQL verification are documented in
+`docs/tsetmc-m3b2.md` and `docs/tsetmc-m3b2-verification.md`. TSETMC is disabled by
+default. Frozen rc1 remains at 0010 and cannot restart against 0011. Do not run its
+hardcoded exporter to package these development changes. Source tracks are unchanged.

@@ -31,10 +31,10 @@ async def boundary(c: Any, component: str, *, complete: bool = False) -> dict[st
         await c.fetchval("SELECT version_num FROM source_capture_version") if capture else None
     )
     if component == "company":
-        if capture or base not in {None, *(f"{n:04}" for n in range(1, 11))}:
+        if capture or base not in {None, *(f"{n:04}" for n in range(1, 12))}:
             raise ValueError("company database must not contain source capture")
-        if complete and base != "0010":
-            raise ValueError("company requires destination 0010")
+        if complete and base != "0011":
+            raise ValueError("company requires destination 0011")
     elif component == "collector":
         if destination or base not in {None, *(f"{n:04}" for n in range(1, 7))}:
             raise ValueError("collector database must not contain destination schema")
@@ -140,7 +140,7 @@ async def execute(args: argparse.Namespace) -> dict[str, Any]:
             commands = [[sys.executable, "-m", "alembic"]]
             if args.timescale:
                 commands[0] += ["-x", "timescale=true"]
-            commands[0] += ["upgrade", "0010" if component == "company" else "0006"]
+            commands[0] += ["upgrade", "0011" if component == "company" else "0006"]
             if component == "collector":
                 commands.append(
                     [
@@ -170,7 +170,7 @@ async def execute(args: argparse.Namespace) -> dict[str, Any]:
         if args.roles:
             await boundary(c, component, complete=True)
             scripts = (
-                ["v11_destination_roles.sql"]
+                ["v11_destination_roles.sql", "tsetmc_destination_roles.sql"]
                 if component == "company"
                 else ["v11_source_sync_role.sql", "v11_source_collector_role.sql"]
             )
@@ -222,6 +222,30 @@ async def execute(args: argparse.Namespace) -> dict[str, Any]:
                 raise ValueError("producer policy belongs only in the company database")
             await boundary(c, component, complete=True)
             await provision(c, json.loads(args.provision.read_text("utf-8")))
+        if any(
+            getattr(args, name, None)
+            for name in ("tsetmc_register", "tsetmc_provision", "tsetmc_upgrade_grants")
+        ):
+            if component != "company":
+                raise ValueError("TSETMC administration belongs only in company storage")
+            await boundary(c, component, complete=True)
+            from marketdata.tsetmc_registry import InstrumentBinding, register
+            from marketdata.tsetmc_registry import provision as provision_tsetmc
+
+            if getattr(args, "tsetmc_register", None):
+                binding = InstrumentBinding.model_validate(
+                    json.loads(args.tsetmc_register.read_text("utf-8"))
+                )
+                await register(c, binding, activate=getattr(args, "tsetmc_activate", False))
+            if getattr(args, "tsetmc_provision", None):
+                await provision_tsetmc(c, json.loads(args.tsetmc_provision.read_text("utf-8")))
+            if getattr(args, "tsetmc_upgrade_grants", False):
+                async with c.transaction():
+                    await c.execute(
+                        (root / "scripts/sql/tsetmc_destination_roles.sql").read_text("utf-8")
+                    )
+        elif getattr(args, "tsetmc_activate", False):
+            raise ValueError("activation requires an explicit new binding")
         if args.check:
             result = await boundary(c, component, complete=True)
         if component == "collector" and result["source_extension"]:
@@ -245,6 +269,10 @@ def main() -> None:
     parser.add_argument("--registry", type=Path)
     parser.add_argument("--provision", type=Path)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--tsetmc-register", type=Path)
+    parser.add_argument("--tsetmc-activate", action="store_true")
+    parser.add_argument("--tsetmc-provision", type=Path)
+    parser.add_argument("--tsetmc-upgrade-grants", action="store_true")
     args = parser.parse_args()
     try:
         print(json.dumps(asyncio.run(execute(args))))

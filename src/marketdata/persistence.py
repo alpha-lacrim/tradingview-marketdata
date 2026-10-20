@@ -108,7 +108,7 @@ class Store:
                     not in {"sc0001", "sc0002"}
                 ):
                     raise RuntimeError("source capture requires base 0006 plus source sc0001")
-            elif version != "0010":
+            elif version != "0011":
                 if version == "0006" and await connection.fetchval(
                     "SELECT to_regclass('source_capture_version')"
                 ):
@@ -146,10 +146,13 @@ class Store:
                         OR has_function_privilege(current_user,
                             'ingest_recover_session(uuid,text,jsonb)','EXECUTE')
                 """)
+                from marketdata.tsetmc_permissions import validate_permissions
+
                 if unsafe:
                     raise RuntimeError(
                         "production API requires a dedicated SELECT-only database role"
                     )
+                await validate_permissions(connection, read_only=True)
 
     @asynccontextmanager
     async def connection(self) -> AsyncIterator[Any]:
@@ -193,7 +196,9 @@ class Store:
                     'realtime_status', p.realtime_status,
                     'data_delay_seconds', p.data_delay_seconds, 'metadata', p.metadata
                 ) ORDER BY p.provider) FILTER (WHERE p.provider IS NOT NULL), '[]') AS mappings
-                FROM instruments i LEFT JOIN provider_instruments p ON p.instrument_id=i.id
+                FROM instruments i LEFT JOIN provider_instruments p
+                    ON p.instrument_id=i.id AND p.provider<>'tsetmc'
+                WHERE i.canonical_symbol NOT LIKE 'TSETMC:%' AND i.asset_class<>'equity'
                 GROUP BY i.id ORDER BY i.canonical_symbol
             """)
         return Registry(
@@ -510,7 +515,8 @@ class Store:
         async with self.connection() as c:
             rows = await c.fetch(
                 """SELECT payload, id FROM instruments
-                WHERE canonical_symbol > $1 ORDER BY canonical_symbol LIMIT $2""",
+                WHERE canonical_symbol > $1 AND canonical_symbol NOT LIKE 'TSETMC:%'
+                AND asset_class<>'equity' ORDER BY canonical_symbol LIMIT $2""",
                 after,
                 limit,
             )
@@ -519,7 +525,9 @@ class Store:
     async def instrument(self, symbol: str) -> dict[str, Any] | None:
         async with self.connection() as c:
             row = await c.fetchrow(
-                "SELECT id,payload FROM instruments WHERE canonical_symbol=$1", symbol
+                """SELECT id,payload FROM instruments WHERE canonical_symbol=$1
+                AND canonical_symbol NOT LIKE 'TSETMC:%' AND asset_class<>'equity'""",
+                symbol,
             )
             if row is None:
                 return None
@@ -567,7 +575,8 @@ class Store:
                 WHERE $5::text[] IS NULL OR provider=ANY($5)
                 ) SELECT l.payload,l.kind FROM current l
                 JOIN instruments i ON i.id=l.instrument_id
-                WHERE ($1::text IS NULL OR i.canonical_symbol=$1)
+                WHERE i.canonical_symbol NOT LIKE 'TSETMC:%' AND l.provider<>'tsetmc'
+                AND ($1::text IS NULL OR i.canonical_symbol=$1)
                 AND ($2::text IS NULL OR l.provider=$2)
                 AND (i.canonical_symbol || '/' || l.provider) > $4
                 ORDER BY i.canonical_symbol,l.provider LIMIT $3""",
@@ -585,7 +594,8 @@ class Store:
     async def known_symbols(self, symbols: list[str]) -> set[str]:
         async with self.connection() as c:
             rows = await c.fetch(
-                "SELECT canonical_symbol FROM instruments WHERE canonical_symbol=ANY($1::text[])",
+                """SELECT canonical_symbol FROM instruments WHERE canonical_symbol=ANY($1::text[])
+                AND canonical_symbol NOT LIKE 'TSETMC:%' AND asset_class<>'equity'""",
                 symbols,
             )
         return {r["canonical_symbol"] for r in rows}
@@ -617,7 +627,9 @@ class Store:
                     AND t.payload->>'provider_symbol'=p.provider_symbol
                 LEFT JOIN latest_candles lc ON lc.instrument_id=i.id AND lc.provider=p.provider
                     AND lc.price_basis='native' AND lc.payload->>'provider_symbol'=p.provider_symbol
-                WHERE ($1::text[] IS NULL OR i.canonical_symbol=ANY($1))
+                WHERE p.provider<>'tsetmc' AND i.canonical_symbol NOT LIKE 'TSETMC:%'
+                    AND i.asset_class<>'equity'
+                    AND ($1::text[] IS NULL OR i.canonical_symbol=ANY($1))
                     AND ($2::text IS NULL OR p.provider=$2)
                     AND ($3::text IS NULL OR p.provider_symbol=$3)
                     AND ($4::text IS NULL OR i.asset_class=$4)

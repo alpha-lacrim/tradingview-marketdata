@@ -89,7 +89,7 @@ async def test_fresh_database_installs_current_head_and_optional_timescale(store
         await migrate(url, *args, "upgrade", "head")
         c = await asyncpg.connect(url)
         try:
-            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
             assert await c.fetchval("SELECT count(*) FROM marketdata_events") == 0
             assert await c.fetchval("SELECT count(*) FROM ingest_batches") == 0
             assert (
@@ -109,4 +109,6 @@ async def test_fresh_database_installs_current_head_and_optional_timescale(store
         async with store.connection() as admin:
             # Timescale's scheduler can reconnect after our client closes. This UUID
             # database was created above by this test, never supplied by the operator.
-            await admin.execute(f'DROP DATABASE "{database}" WITH (FORCE)')
+            # Retained Windows evidence includes a 25.539s checkpoint during this DDL.
+            await admin.execute("SET statement_timeout=60000")
+            await admin.execute(f'DROP DATABASE "{database}" WITH (FORCE)', timeout=60)

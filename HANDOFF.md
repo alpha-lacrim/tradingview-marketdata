@@ -1,4 +1,102 @@
-# Current state - 2026-10-17
+# Current state - 2026-10-20, M3B-2 integration checkpoint
+
+Reviewed application head `77381423b596bd3fe0fc7e9ae1710139b32754f6`, PR #3:
+https://github.com/alpha-lacrim/tradingview-marketdata/pull/3 . The owner authorized
+finishing the review, resolving blockers and integrating the stable branch. The PR
+records the actual merge state; continue subsequent work on a feature branch.
+No production migration, release, deployment or new milestone is included.
+
+Pre-merge scrutiny found and corrected REVIEW-01 (Windows-only test guard blocked
+CI), REVIEW-02 (adjacent full states ignored matching retained revision seeds),
+and REVIEW-03 (crash-test immediate lock assertion raced backend EOF cleanup).
+Read docs/tsetmc-m3b2-ci.md and docs/tsetmc-m3b2-premerge-verification.json for the
+exact changes, hashes, failure history, skip reasons and remote evidence.
+
+Both complete final-code GitHub workflows passed: pull_request39482380301 and
+push39482370848. EACH ran PostgreSQL16.1 **867 passed /0 failed /8 skipped** and
+Timescale-enabled PG17.7 **870 passed /0 failed /5 skipped**, including all six
+new financial-order cases and four restricted-role binding concurrency cases.
+Both guarded fresh upgrade, downgrade and re-upgrade steps passed. These are
+repeated full runs, not additive unique-test totals. Local fake-only140, full
+Ruff/format, strict mypy61 and lock checks also passed. Original failures remain
+retained; passing reruns do not relabel older counts. All252 frozen bytes match.
+
+REVIEW-04 also pins normative schema/fixture bytes with narrow Git attributes:
+Windows autocrlf checkout filters otherwise broke all19 manifest hashes. The
+read-only checkout-filter regression now passes and the pure suite has141 cases.
+This adds one test to the earlier full-code counts above; the PR records final checks.
+
+This is a focused local review plus actual CI evidence. The separate GitHub
+Codex review request returned no review; no independent approval is claimed.
+Skipped gates remain physical container backup/outage, frozen v1.0/0006 pipelines
+and production Linux image smoke. Production unit/rights/restore/cutover/security,
+sustained load, real source HTTPS continuity/ACK and public TSETMC READ remain
+future work. Ingestion/enrollment defaults remain off. Original workspaces,
+source databases and frozen releases are preserved; the retained local PG server
+is stopped. Earlier private ownership proofs remain stale and authorize no writes.
+
+## Published implementation and remediation evidence
+
+Worktree `C:/Users/Pouyan/PycharmProjects/tradingview-m3b2`, branch
+`codex/tsetmc-m3b2`, implementation/verification base `e114a25be8679451f6064ad1fb03c0ef6a8aaefe`.
+Owner authorized committing the stable M3B-2 checkpoint and pushing this feature branch on
+2026-10-20. This commit records the company-side implementation and bounded F01–F05/R01
+corrections. Existing verification JSON inventories retain their original pre-commit snapshot;
+do not regenerate evidence merely to replace its base SHA with the resulting commit ID.
+Read docs/tsetmc-m3b2-remediation.md
+and its JSON for exact changes, counts, failures, preservation and remaining gates.
+The original checkpoint did not merge main, tag, release, deploy or begin another milestone.
+
+F01 checks full states against retained previous/successor revision evidence in both
+arrival orders. F03 validates positions from all immutable daily aliases before any
+equal-state return. F04 complete decimal/count syntax and F05 local time/int64-list/
+Unicode checks reject malformed uploads without financial/ledger/journal/receipt writes.
+R01 adds the narrow binding SHARE-lock function/grant to the uncommitted 0011.
+Restricted-role PostgreSQL concurrency checks pass in both lock orders. The retained
+pre-fix method reproduces the race on actual PG; before/after pure probes reproduce
+all six storage/wire failures and show corrected rejection. No protocol/hash/schema change.
+
+F02 verifies pinned ownership before the shared fixture creates an application pool,
+then rechecks its actual pooled connection read-only before TRUNCATE. Fake-only safety
+suite: 24 passed, including real pytest dependency ordering and pool-identity mismatch.
+Missing/stale/forged/incomplete evidence fails closed. Standalone pytest is protected.
+
+Complete final PG16.1 suite: **827 passed / 0 failed / 9 skipped**, 644.65 seconds.
+Includes 152 TSETMC cases +24 guard cases +651 legacy cases. Targeted PG run65 passed.
+Both prior legacy timing failures pass in this complete run. The 50ms startup test and
+application budgets are unchanged; only migration-test administrative DROP has its own
+justified 60s budget. Every earlier failed attempt remains; original suite738/2/9 is
+historical, not relabeled. Ruff/format440 and strict mypy61 pass. New private offline
+wheel install/schema/imports/restricted READ startup and pip check28 pass. Not a release.
+
+Pre-commit verification: command execution recovered after the owner's permission change.
+Fresh fake-only guard/wire tests111 passed; Ruff lint/format440, strict mypy61, offline lock
+consistency and Git whitespace checks pass. An initial mypy invocation with cache-dir=NUL
+hit an internal tool error; the normal-cache no-incremental invocation passed. No application
+code changed afterward. The full database suite was not rerun for this Git-only checkpoint.
+
+Only the known retained PG16.1 cluster was used: sysid7698666753214710248, exact
+artifacts/m3b2/pgdata, loopback4195, task owner801c97e7-784b-4737-b6ca-fa191a8c4373.
+New task database m3b2_remediation_20261020_cfeb921b_test, OID414409, m3b2_admin,
+with its own ownership comment. Old task database catalogue identities remain unchanged.
+Final SQL: head0011, nine tables, fsync/on, synchronous_commit/on, zero other clients.
+Server is **stopped cleanly**. Data/logs preserved. Proof artifacts/m3b2/remediation/
+isolation.json is now stale by design: reidentify/revalidate before another authorized
+write run. Never copy an old report or use an _test suffix/port alone as authorization.
+Old local0011 diagnostic DBs retain earlier development DDL; no implicit migration repair.
+
+All252 frozen payloads match HEAD; no generated caches in frozen directories. Reference
+contracts/examples, old migrations and collector/worker code remain unchanged. Original
+owner worktree changes are preserved. Graphify AST update completed; SQL parser absent
+for seven SQL files, so it is navigation, not SQL validation. No manual graph/cache deletion.
+
+Next: independent READ-ONLY audit of this feature-branch checkpoint. No release or deployment readiness claim. Real
+unit/rights/corporate-action approval, company inventory, Linux/TimescaleDB, sustained load,
+gateway/security/restore/cutover, real HTTPS continuity/ACK and public READ remain future
+gates. TSETMC ingestion/enrollment defaults off. Frozen old rc1 refuses head0011 and
+cannot serve as binary-only rollback. Future export needs separately reviewed version/path.
+
+## Prior frozen rc1 evidence (historical)
 
 ## FastAPI v1.1 - Milestone 5 complete, publication authorized
 

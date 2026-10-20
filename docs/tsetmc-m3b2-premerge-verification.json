@@ -1,0 +1,226 @@
+{
+  "reviewed_application_head": "77381423b596bd3fe0fc7e9ae1710139b32754f6",
+  "base": "e114a25be8679451f6064ad1fb03c0ef6a8aaefe",
+  "pull_request": "https://github.com/alpha-lacrim/tradingview-marketdata/pull/3",
+  "review_provenance": "Focused local adversarial review plus actual GitHub-hosted regressions. Separate Codex request returned no review; no independent approval claimed.",
+  "findings": {
+    "REVIEW-01": "Resolved: positive CI service/container/volume/physical/live proof before migrations and pooled fixture writes. Retained local profile preserved.",
+    "REVIEW-02": "Resolved: matching retained revision evidence is used for adjacent full states without embedded evidence; missing/conflicting evidence still rejects.",
+    "REVIEW-03": "Resolved: crash-test backend EOF cleanup is awaited with the existing bounded lock-release pattern; production worker and budgets unchanged.",
+    "REVIEW-04": "Resolved: narrow Git -text attributes preserve the normative schema and nineteen payload hashes under Windows checkout conversion. Read-only checkout-filter regression passes."
+  },
+  "local_pure_passed": 140,
+  "local_pure_failed": 0,
+  "suites": [
+    {
+      "run": 39482380301,
+      "matrix": "ci-evidence-timescale-false",
+      "postgres_version": "160001",
+      "total": 875,
+      "passed": 867,
+      "failed": 0,
+      "skipped": 8,
+      "skip_details": [
+        {
+          "test": "test_backup_restore_preserves_history_and_invalidates_old_replay_cursor",
+          "reason": "requires the task-owned Batch 4 container"
+        },
+        {
+          "test": "test_old_quote_stays_stale_across_released_api_restarts",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_dual_collector_to_exact_released_api_outage_recovery_replay",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_actual_postgresql_outage_then_journal_and_rest_recover",
+          "reason": "set BATCH3_TEST_CONTAINER to a task-owned disposable Batch 3 container"
+        },
+        {
+          "test": "test_candles_trade_volume_mid_and_all_intervals[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_candle_ties_are_deterministic_after_refresh[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_candle_pagination_preserves_multiple_statuses_in_same_bucket[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_linux_production_entrypoint_with_two_workers_and_readonly_files",
+          "reason": "requires built Batch 4 image and disposable database container"
+        }
+      ],
+      "financial_and_binding_cases": 10,
+      "financial_and_binding_failures": [],
+      "junit_sha256": "3911d44d4cb01fec729e967233fb1eec9dc2efa72594d8ce03758988ee94a304",
+      "proof_sha256": "2adfb62c618e000ba53d7c97fd9225aa3b88a1e41a723b345532b33966623291"
+    },
+    {
+      "run": 39482380301,
+      "matrix": "ci-evidence-timescale-true",
+      "postgres_version": "170007",
+      "total": 875,
+      "passed": 870,
+      "failed": 0,
+      "skipped": 5,
+      "skip_details": [
+        {
+          "test": "test_backup_restore_preserves_history_and_invalidates_old_replay_cursor",
+          "reason": "requires the task-owned Batch 4 container"
+        },
+        {
+          "test": "test_old_quote_stays_stale_across_released_api_restarts",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_dual_collector_to_exact_released_api_outage_recovery_replay",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_actual_postgresql_outage_then_journal_and_rest_recover",
+          "reason": "set BATCH3_TEST_CONTAINER to a task-owned disposable Batch 3 container"
+        },
+        {
+          "test": "test_linux_production_entrypoint_with_two_workers_and_readonly_files",
+          "reason": "requires built Batch 4 image and disposable database container"
+        }
+      ],
+      "financial_and_binding_cases": 10,
+      "financial_and_binding_failures": [],
+      "junit_sha256": "97f733e9f6c190e7b9e9394ca47a1e9b95eb2ad40f7d9a2dc45b34e4c8df177c",
+      "proof_sha256": "9a6d49c8dbb568ad27f637f56ffbe51f0c88c2932067c1cc910ca3e274f6945d"
+    },
+    {
+      "run": 39482370848,
+      "matrix": "ci-evidence-timescale-false",
+      "postgres_version": "160001",
+      "total": 875,
+      "passed": 867,
+      "failed": 0,
+      "skipped": 8,
+      "skip_details": [
+        {
+          "test": "test_backup_restore_preserves_history_and_invalidates_old_replay_cursor",
+          "reason": "requires the task-owned Batch 4 container"
+        },
+        {
+          "test": "test_old_quote_stays_stale_across_released_api_restarts",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_dual_collector_to_exact_released_api_outage_recovery_replay",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_actual_postgresql_outage_then_journal_and_rest_recover",
+          "reason": "set BATCH3_TEST_CONTAINER to a task-owned disposable Batch 3 container"
+        },
+        {
+          "test": "test_candles_trade_volume_mid_and_all_intervals[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_candle_ties_are_deterministic_after_refresh[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_candle_pagination_preserves_multiple_statuses_in_same_bucket[True]",
+          "reason": "Timescale aggregates not enabled"
+        },
+        {
+          "test": "test_linux_production_entrypoint_with_two_workers_and_readonly_files",
+          "reason": "requires built Batch 4 image and disposable database container"
+        }
+      ],
+      "financial_and_binding_cases": 10,
+      "financial_and_binding_failures": [],
+      "junit_sha256": "ce65967ec99c00f64334ed53ae504440028953f5c9281a7e19f7baa33533c57b",
+      "proof_sha256": "58c444e24299f3c7c923df8063f3d336a8b532ae45e45629fe0f1051073b2c30"
+    },
+    {
+      "run": 39482370848,
+      "matrix": "ci-evidence-timescale-true",
+      "postgres_version": "170007",
+      "total": 875,
+      "passed": 870,
+      "failed": 0,
+      "skipped": 5,
+      "skip_details": [
+        {
+          "test": "test_backup_restore_preserves_history_and_invalidates_old_replay_cursor",
+          "reason": "requires the task-owned Batch 4 container"
+        },
+        {
+          "test": "test_old_quote_stays_stale_across_released_api_restarts",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_dual_collector_to_exact_released_api_outage_recovery_replay",
+          "reason": "immutable v1.0 binary requires 0006; separately qualify its frozen suite"
+        },
+        {
+          "test": "test_actual_postgresql_outage_then_journal_and_rest_recover",
+          "reason": "set BATCH3_TEST_CONTAINER to a task-owned disposable Batch 3 container"
+        },
+        {
+          "test": "test_linux_production_entrypoint_with_two_workers_and_readonly_files",
+          "reason": "requires built Batch 4 image and disposable database container"
+        }
+      ],
+      "financial_and_binding_cases": 10,
+      "financial_and_binding_failures": [],
+      "junit_sha256": "edf2fc8ed61bb37a076b3859a9d616b0d52beaaaa3b1000bdb88b8ec6da6573a",
+      "proof_sha256": "74e9b860a2fc106f80e345d307dcf55f94b949af813f27f05a7ed7b5e17a8281"
+    }
+  ],
+  "frozen_payloads": {
+    "marketdata-collector-sync-v1.1.0rc1": 106,
+    "marketdata-fastapi-v1.1.0rc1": 80,
+    "marketdata-fastapi": 66
+  },
+  "frozen_mismatches": [],
+  "code_file_sha256": {
+    ".github/workflows/test.yaml": "b51e74740464a9431372c144d28038190ffbfc2683cffa782cb834791bf62ae7",
+    "src/marketdata/tsetmc_storage.py": "a719365217bd69e2b18613f7d4cb0163191f983a17d9cc4aa0e84e5f2c1a6735",
+    "tests/ci_postgres.py": "844b18674a4b3250d8bf2f051f48db9c297b66bc9aaf3b2421d5c3abd71d0b50",
+    "tests/disposable_postgres.py": "c48ddaaa6bf7f2db56473da9b890f989631ebba297ab032c7979565395aeb683",
+    "tests/test_ci_postgres.py": "2f6407b8b844c63c7a7249c5bc46f9608fa6847593ca751411931e46187d26e8",
+    "tests/test_disposable_postgres.py": "45d73876dd15789990ab376967110a5da3944918464f06832ba9fdcb756a33b9",
+    "tests/test_sync_worker.py": "1efd602900c107305389e2126490a80d6a4a38cb8a220381d75029d77305aec0",
+    "tests/test_tsetmc_http.py": "2786ad66d7dd2cbdcf9dfdf24ea2a27bd19fa6b09492e68a4c30f1230703d56a",
+    "tests/test_tsetmc_ingestion.py": "0596370a9feb24c247944bfabb9ee168f31eba876c0b6c1cbff5125a137e3720",
+    ".gitattributes": "aa7dc7a71026773f33dd0bf1d33c3401dbcc6aeb1726e60ff2afed3310f7fb50",
+    "tests/test_tsetmc_wire.py": "7cc9324e9f95ec839c5c8559a293f5bf58cdd41a2d1bba2a369006b9ed4e129d"
+  },
+  "earlier_failures": [
+    {
+      "run": 39477219485,
+      "result": "484 passed /356 setup errors in each pytest matrix log; workflow guard mismatch"
+    },
+    {
+      "run": 39480828481,
+      "result": "PG16.1 860 passed/1 failed/8 skipped; child exit before backend lock release"
+    },
+    {
+      "run": 39481992419,
+      "result": "Timescale/PG17.7 869 passed/1 failed/5 skipped; same lock cleanup race at after_source_ack"
+    },
+    {
+      "local": "ci-guard-pure-1.xml",
+      "result": "139 passed/1 failed; bootstrap proof omitted data_directory; corrected"
+    }
+  ],
+  "local_databases_or_services_changed": false,
+  "production_changes": false,
+  "recommendation": "Ready for code integration after current PR checks; not release/deployment readiness.",
+  "checkout_verification": {
+    "before_windows_hash_mismatches": 19,
+    "after_windows_hash_mismatches": 0,
+    "latest_pure_passed": 141,
+    "first_test_harness_attempt": "140 passed/1 failed: used an absolute path in the Git object name; corrected to repository-relative path. Log retained."
+  }
+}

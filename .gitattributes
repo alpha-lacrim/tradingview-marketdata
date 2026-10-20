@@ -11,3 +11,7 @@
 # Preserve candidate payload checksums in fresh Windows and Linux checkouts.
 /distributions/marketdata-fastapi-v1.1.0rc1/** text=auto eol=lf
 /distributions/marketdata-collector-sync-v1.1.0rc1/** text=auto eol=lf
+
+# Normative TSETMC payload hashes require identical bytes on every checkout.
+/tests/fixtures/tsetmc_v1/** -text
+/src/marketdata/contracts/tsetmc.v1.schema.json -text
