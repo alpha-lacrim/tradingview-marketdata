@@ -80,3 +80,18 @@ correction and now returns applied/superseded respectively. Six new PostgreSQL
 cases cover four valid seed/state orders, both missing-evidence rejection orders,
 atomic rejection and exact retry after the genuine seed arrives. Actual database
 results must come from the final CI runs containing these six cases.
+
+## Crash-test harness timing
+
+The CI-ownership commit's push workflow39480821957 passed both complete matrices.
+Its duplicate PR workflow39480828481 recorded one plain-PostgreSQL failure:
+860 passed / 1 failed / 8 skipped. The child exited with the required crash code,
+but the immediate `pg_try_advisory_lock` returned false while PostgreSQL was
+still processing the closed client socket. The other full run passed that case.
+
+`test_real_worker_process_crash_and_restart` now waits up to ten seconds for
+actual lock release, matching the adjacent competing-worker test's existing
+bounded polling. It still requires the real lock, process crash boundary,
+receipt/ACK recovery and exact financial result. No source worker code or
+application/request timeout changed. The original failing log is retained;
+subsequent results do not overwrite its counts.

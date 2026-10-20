@@ -24,6 +24,12 @@ Six new PostgreSQL cases cover valid orders and rejection/retry without evidence
 Final CI must include this financial correction before any merge; do not substitute
 the earlier CI-guard-only result. The wire contract and migration remain unchanged.
 
+CI-guard-only push39480821957 passed both matrices. Its duplicate PR run39480828481
+had one legacy crash-test race (PG860 passed/1 failed/8 skipped): child exit81
+preceded PostgreSQL releasing its socket-held advisory lock. The harness now uses
+the adjacent test's existing bounded ten-second actual-lock wait; worker code,
+financial assertions and production budgets stay unchanged. Final combined CI pending.
+
 ## Published implementation and remediation evidence
 
 Worktree `C:/Users/Pouyan/PycharmProjects/tradingview-m3b2`, branch

@@ -996,9 +996,12 @@ async def test_real_worker_process_crash_and_restart(sync, pair, tmp_path, bound
         if child.returncode is None:
             child.kill()
             await child.wait()
-    assert await owner.fetchval(
-        "SELECT pg_try_advisory_lock(hashtextextended('marketdata:source-sync',0))"
-    )
+    # Child exit can precede PostgreSQL processing its socket EOF and releasing the lock.
+    async with asyncio.timeout(10):
+        while not await owner.fetchval(  # noqa: ASYNC110
+            "SELECT pg_try_advisory_lock(hashtextextended('marketdata:source-sync',0))"
+        ):
+            await asyncio.sleep(0.02)
     await w.local.claim(owner)
     w.state = (await w.local.get())["state"]
     # A restarted process has a fresh TLS pool and no trusted monotonic lease timer.
