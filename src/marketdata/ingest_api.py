@@ -20,16 +20,15 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from marketdata import __version__
 from marketdata.config import Settings
 from marketdata.ingest_auth import Credentials, SessionRequest, session, strict_json
+from marketdata.ingest_grants import GrantRecoveryReceipt as RecoveryReceipt
+from marketdata.ingest_grants import GrantRecoveryRequest as RecoveryRequest
 from marketdata.persistence import Store
 from marketdata.reconciliation import ReconcileRequest, reconcile
 from marketdata.replication import DestinationWriter, ReplicationError
 from marketdata.replication_models import decode_batch
-from marketdata.session_recovery import (
-    MAX_RECOVERY_BYTES,
-    RecoveryReceipt,
-    RecoveryRequest,
-    recover_session,
-)
+from marketdata.session_recovery import MAX_RECOVERY_BYTES, recover_session
+from marketdata.tsetmc_storage import TsetmcWriter
+from marketdata.tsetmc_wire import TsetmcError
 
 logger = logging.getLogger(__name__)
 DATABASE_ERRORS = (asyncpg.PostgresError, asyncpg.InterfaceError, OSError, TimeoutError)
@@ -64,14 +63,19 @@ class Rejection(Exception):
         self.status, self.code = status, code
 
 
-def failure(status: int, code: str) -> JSONResponse:
+def failure(
+    status: int, code: str, *, tsetmc: bool = False, indexes: list[int] | None = None
+) -> JSONResponse:
     headers = {"Cache-Control": "no-store"}
     if status in {429, 503}:
         headers["Retry-After"] = "60" if status == 429 else "2"
     if status == 401:
         headers["WWW-Authenticate"] = "Bearer"
+    error: dict[str, Any] = {"code": code, "retryable": status in {429, 503}}
+    if tsetmc:
+        error["record_indexes"] = indexes or []
     return JSONResponse(
-        {"error": {"code": code, "retryable": status in {429, 503}}},
+        {"error": error},
         status_code=status,
         headers=headers,
     )
@@ -115,6 +119,11 @@ class IngestGuard:
             await self.app(scope, receive, send)
             return
         request = Request(scope, receive)
+        tsetmc = request.url.path.startswith("/api/ingest/v1/tsetmc/")
+
+        def fail(status: int, code: str, indexes: list[int] | None = None) -> JSONResponse:
+            return failure(status, code, tsetmc=tsetmc, indexes=indexes)
+
         started = False
 
         async def guarded_send(message: Message) -> None:
@@ -131,13 +140,13 @@ class IngestGuard:
             await JSONResponse({"ingest": "alive"})(scope, receive, guarded_send)
             return
         if request.scope["scheme"] != "https":
-            await failure(400, "https_required")(scope, receive, send)
+            await fail(400, "https_required")(scope, receive, send)
             return
         if request.headers.get("origin") is not None:
-            await failure(403, "browser_access_denied")(scope, receive, send)
+            await fail(403, "browser_access_denied")(scope, receive, send)
             return
         if self.active >= self.settings.ingest_max_inflight:
-            await failure(503, "ingestion_busy")(scope, receive, send)
+            await fail(503, "ingestion_busy")(scope, receive, send)
             return
         self.active += 1
         try:
@@ -159,22 +168,24 @@ class IngestGuard:
                     raise Rejection(429, "rate_limited")
                 request.state.principal = principal
                 await self.app(scope, receive, guarded_send)
+        except TsetmcError as error:
+            response = fail(error.status, error.code, error.indexes)
         except Rejection as error:
-            response = failure(error.status, error.code)
+            response = fail(error.status, error.code)
         except ReplicationError as error:
             status = ERROR_STATUS.get(error.code, 500)
-            response = failure(status, error.code if status != 500 else "internal_error")
+            response = fail(status, error.code if status != 500 else "internal_error")
         except DATABASE_ERRORS as error:
             logger.warning(
                 "ingestion database unavailable",
                 extra={"context": {"category": type(error).__name__}},
             )
-            response = failure(503, "database_unavailable")
+            response = fail(503, "database_unavailable")
         except Exception as error:
             logger.error(
                 "ingestion request failed", extra={"context": {"category": type(error).__name__}}
             )
-            response = failure(500, "internal_error")
+            response = fail(500, "internal_error")
         finally:
             self.active -= 1
 
@@ -188,6 +199,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         raise ValueError("ingestion factory requires APPLICATION_ROLE=ingest")
     store = Store(settings)
     writer = DestinationWriter(store)
+    tsetmc_writer = TsetmcWriter(store)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -196,6 +208,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.credentials = Credentials(settings.ingest_credentials_file)
             await store.connect()
             await writer.validate_permissions()
+            if settings.tsetmc_ingest_enabled:
+                from marketdata.tsetmc_permissions import validate_permissions
+
+                async with store.connection() as c:
+                    await validate_permissions(c, read_only=False)
             async with store.connection() as c:
                 permitted = await c.fetchval("""SELECT
                     has_function_privilege(current_user,
@@ -231,17 +248,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redirect_slashes=False,
     )
     app.state.store, app.state.writer = store, writer
+    app.state.tsetmc_writer = tsetmc_writer
+    from marketdata.tsetmc_ingest import register
+
+    register(app, settings, tsetmc_writer)
     app.add_middleware(IngestGuard, owner=app, settings=settings, store=store)
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, error: HTTPException) -> JSONResponse:
         return failure(
-            error.status_code, "not_found" if error.status_code == 404 else "invalid_request"
+            error.status_code,
+            "not_found" if error.status_code == 404 else "invalid_request",
+            tsetmc=request.url.path.startswith("/api/ingest/v1/tsetmc/"),
         )
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request: Request, error: RequestValidationError) -> JSONResponse:
-        return failure(422, "invalid_request")
+        return failure(
+            422, "invalid_request", tsetmc=request.url.path.startswith("/api/ingest/v1/tsetmc/")
+        )
 
     # Route exceptions must reach the guard without FastAPI's default input-echo errors.
     async def upload(request: Request, stream: str) -> dict[str, Any]:
@@ -395,6 +420,58 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "scheme": "bearer",
             "bearerFormat": "key_id.secret",
         }
+        from marketdata.tsetmc_wire import schema as tsetmc_schema
+
+        def references(value: Any) -> Any:
+            if isinstance(value, list):
+                return [references(item) for item in value]
+            if isinstance(value, dict):
+                return {
+                    key: "#/components/schemas/Tsetmc" + item.removeprefix("#/$defs/")
+                    if key == "$ref"
+                    else references(item)
+                    for key, item in value.items()
+                }
+            return value
+
+        for name, definition in tsetmc_schema()["$defs"].items():
+            schemas["Tsetmc" + name] = references(definition)
+        for name in ("daily", "current", "coverage", "status", "reconcile"):
+            operation = schema["paths"]["/api/ingest/v1/tsetmc/" + name]["post"]
+            request_type = "ReconcileRequest" if name == "reconcile" else "Batch"
+            response_type = "ReconcileResponse" if name == "reconcile" else "Receipt"
+            operation.update(
+                security=[{"ProducerBearer": []}],
+                requestBody={
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/Tsetmc" + request_type}
+                        }
+                    },
+                },
+                responses={
+                    "200": {
+                        "description": "Committed" if name != "reconcile" else "Compared",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Tsetmc" + response_type}
+                            }
+                        },
+                    },
+                    **{
+                        str(code): {
+                            "description": "Safe bounded error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/TsetmcError"}
+                                }
+                            },
+                        }
+                        for code in (400, 401, 403, 409, 413, 415, 422, 429, 500, 503)
+                    },
+                },
+            )
         return schema
 
     app.openapi_schema = ingestion_openapi()

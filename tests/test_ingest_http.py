@@ -58,6 +58,9 @@ async def ingress(destination, tmp_path):  # noqa: F811 - imported pytest fixtur
         await c.execute(
             await asyncio.to_thread(Path("scripts/sql/v11_destination_roles.sql").read_text)
         )
+        await c.execute(
+            await asyncio.to_thread(Path("scripts/sql/tsetmc_destination_roles.sql").read_text)
+        )
         for role in ("marketdata_v11_ingest", "marketdata_v11_read"):
             await c.execute(f"ALTER ROLE {role} PASSWORD 'disposable_test'")
     parsed = urlsplit(d.store.settings.database_url.get_secret_value())

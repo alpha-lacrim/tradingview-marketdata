@@ -72,7 +72,7 @@ def test_release_collector_requires_capture_before_secret_loading(tmp_path, monk
 @pytest.mark.integration
 async def test_actual_destination_source_boundary(store):
     async with store.connection() as c:
-        assert (await boundary(c, "company", complete=True))["base"] == "0010"
+        assert (await boundary(c, "company", complete=True))["base"] == "0011"
         with pytest.raises(ValueError, match="destination"):
             await boundary(c, "collector")
 
@@ -196,7 +196,7 @@ async def test_guarded_first_install_from_separate_tracks(store, tmp_path, compo
         await c.execute(f'CREATE DATABASE "{name}"')
     try:
         state = await execute(args)
-        assert state["base"] == ("0010" if component == "company" else "0006")
+        assert state["base"] == ("0011" if component == "company" else "0006")
         assert state["source_extension"] == (None if component == "company" else "sc0002")
         assert await execute(args) == state  # Repeated migration retains the source epoch.
         args.database = "wrong_test"

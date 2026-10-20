@@ -46,3 +46,5 @@ config/*.local.json
 # Reviewed v1.1 candidate role scripts are release source, not SQL dumps.
 !distributions/marketdata-fastapi-v1.1.0rc1/scripts/sql/*.sql
 !distributions/marketdata-collector-sync-v1.1.0rc1/scripts/sql/*.sql
+
+!scripts/sql/tsetmc_destination_roles.sql

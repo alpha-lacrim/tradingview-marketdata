@@ -1,3 +1,7 @@
+> Unreleased company-side TSETMC M3B-2: [design and operations](docs/tsetmc-m3b2.md),
+> [local verification](docs/tsetmc-m3b2-verification.md). Development destination head is **0011**;
+> TSETMC is disabled by default. Frozen rc1 below remains **0010**. No rollout or new release.
+
 > FastAPI **1.1.0rc1**: [release preparation and verification](docs/fastapi-v1.1-milestone5.md),
 > [company first installation](distributions/marketdata-fastapi-v1.1.0rc1/INSTALL-COMPANY.md),
 > [Windows worker](distributions/marketdata-collector-sync-v1.1.0rc1/INSTALL-WINDOWS.md),
@@ -15,7 +19,7 @@ subscriptions through FastAPI.
 
 **FastAPI v1.1 development:** [milestone 1 destination foundation](docs/fastapi-v1.1-milestone1.md)
 adds transaction-aware persistence, fenced producer ownership and durable batch receipts.
-Root destination schema head is **0010**. Milestone 3B adds an independent durable HTTPS worker;
+Root development destination schema head is **0011**. Milestone 3B adds an independent durable HTTPS worker;
 no deployment or live collector change has occurred. The frozen v1.0 handover below remains
 unchanged at schema **0006**.
 
