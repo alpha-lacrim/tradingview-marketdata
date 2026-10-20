@@ -1,34 +1,34 @@
-# Current state — 2026-10-20, M3B-2 pre-merge verification
+# Current state ? 2026-10-20, M3B-2 integration checkpoint
 
-Published checkpoint `bbef28f5c8e44a2a9f630a097542a42b63f8b319` is on
-`codex/tsetmc-m3b2`; draft PR #3 targets main. Pre-merge scrutiny found REVIEW-01:
-the retained Windows-only guard rejects GitHub's Linux database fixture. Both
-matrix logs in Actions39477219485 show484 passed/356 setup errors. This is a CI
-regression, not a green suite or a failure of the retained local827/9 evidence.
+Reviewed application head `77381423b596bd3fe0fc7e9ae1710139b32754f6`, PR #3:
+https://github.com/alpha-lacrim/tradingview-marketdata/pull/3 . The owner authorized
+finishing the review, resolving blockers and integrating the stable branch. The PR
+records the actual merge state; continue subsequent work on a feature branch.
+No production migration, release, deployment or new milestone is included.
 
-Owner granted discretion to resolve the blocker and complete the reviewed PR
-flow. The correction adds a separate positive GitHub service ownership profile;
-the original retained-cluster guard remains intact. Read docs/tsetmc-m3b2-ci.md
-for physical/container/live proof, mutation ordering, tests and actual CI results.
-Fake-only guard/wire140 pass, Ruff/format442 and strict mypy61 pass. First proof
-bootstrap test failed because its data-directory field was omitted; corrected.
-No local server/database change. Wait for actual CI results before merging.
-The separate GitHub Codex review request is pending, not an independent approval.
-No release, deployment, production migration, source-system change or new milestone.
+Pre-merge scrutiny found and corrected REVIEW-01 (Windows-only test guard blocked
+CI), REVIEW-02 (adjacent full states ignored matching retained revision seeds),
+and REVIEW-03 (crash-test immediate lock assertion raced backend EOF cleanup).
+Read docs/tsetmc-m3b2-ci.md and docs/tsetmc-m3b2-premerge-verification.json for the
+exact changes, hashes, failure history, skip reasons and remote evidence.
 
-Further scrutiny found REVIEW-02: the adjacency comparison rejected full states
-without embedded evidence even when their matching revision seed was retained.
-It now reuses the genuine retained evidence already checked by F01. Before/after
-production-method probes demonstrate rejection then applied/superseded results.
-Six new PostgreSQL cases cover valid orders and rejection/retry without evidence.
-Final CI must include this financial correction before any merge; do not substitute
-the earlier CI-guard-only result. The wire contract and migration remain unchanged.
+Both complete final-code GitHub workflows passed: pull_request39482380301 and
+push39482370848. EACH ran PostgreSQL16.1 **867 passed /0 failed /8 skipped** and
+Timescale-enabled PG17.7 **870 passed /0 failed /5 skipped**, including all six
+new financial-order cases and four restricted-role binding concurrency cases.
+Both guarded fresh upgrade, downgrade and re-upgrade steps passed. These are
+repeated full runs, not additive unique-test totals. Local fake-only140, full
+Ruff/format, strict mypy61 and lock checks also passed. Original failures remain
+retained; passing reruns do not relabel older counts. All252 frozen bytes match.
 
-CI-guard-only push39480821957 passed both matrices. Its duplicate PR run39480828481
-had one legacy crash-test race (PG860 passed/1 failed/8 skipped): child exit81
-preceded PostgreSQL releasing its socket-held advisory lock. The harness now uses
-the adjacent test's existing bounded ten-second actual-lock wait; worker code,
-financial assertions and production budgets stay unchanged. Final combined CI pending.
+This is a focused local review plus actual CI evidence. The separate GitHub
+Codex review request returned no review; no independent approval is claimed.
+Skipped gates remain physical container backup/outage, frozen v1.0/0006 pipelines
+and production Linux image smoke. Production unit/rights/restore/cutover/security,
+sustained load, real source HTTPS continuity/ACK and public TSETMC READ remain
+future work. Ingestion/enrollment defaults remain off. Original workspaces,
+source databases and frozen releases are preserved; the retained local PG server
+is stopped. Earlier private ownership proofs remain stale and authorize no writes.
 
 ## Published implementation and remediation evidence
 

@@ -95,3 +95,36 @@ bounded polling. It still requires the real lock, process crash boundary,
 receipt/ACK recovery and exact financial result. No source worker code or
 application/request timeout changed. The original failing log is retained;
 subsequent results do not overwrite its counts.
+
+The earlier financial-fix-only push39481992419 also recorded this same race at
+`after_source_ack` in the Timescale job: 869 passed /1 failed /5 skipped. All six
+new financial cases passed in both matrices of that run. The log remains retained.
+
+## Final application-code results
+
+Application head `77381423b596bd3fe0fc7e9ae1710139b32754f6` passed BOTH complete
+workflows: [PR run39482380301](https://github.com/alpha-lacrim/tradingview-marketdata/actions/runs/39482380301)
+and [push run39482370848](https://github.com/alpha-lacrim/tradingview-marketdata/actions/runs/39482370848).
+Each has these actual JUnit results; these are repeated runs, not additive unique tests:
+
+| Environment | Passed | Failed | Skipped |
+|---|---:|---:|---:|
+| PostgreSQL16.1, Linux runner | 867 | 0 | 8 |
+| Timescale-enabled PostgreSQL17.7, Linux runner | 870 | 0 | 5 |
+
+Both environments passed all six new retained-revision cases, four restricted-role
+binding schedules, existing crash/retry tests, frozen collector-sync compatibility
+and legacy READ/INGEST regressions. Guarded fresh migration, downgrade to base and
+re-upgrade also passed in both workflows. The physical/data/live ownership
+preflight succeeded before the first migration. See the adjacent
+`tsetmc-m3b2-premerge-verification.json` for artifact digests and exact skips.
+
+The five common skips are container backup/restore, container outage, two frozen
+v1.0/0006 pipelines, and production Linux image smoke. The plain PostgreSQL job
+also skips three Timescale aggregate cases; they pass in the Timescale job.
+No skipped gate is claimed passed. Application source is unchanged by subsequent
+documentation/Graphify publication updates.
+
+This was a focused local adversarial review with actual remote regression evidence.
+The separate GitHub Codex review request returned no review; it is not represented
+as independent approval. Code integration is distinct from release or deployment.

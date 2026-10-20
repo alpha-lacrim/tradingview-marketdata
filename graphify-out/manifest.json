@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792523864.0137255,
-    "seen": 1792523876.7695127,
-    "ast_hash": "331171ac00bd208dabb7f5d46268b3ad",
+    "mtime": 1792524659.2185962,
+    "seen": 1792524671.6484685,
+    "ast_hash": "591ab3a54e5598a250c2a0800300423a",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3426,9 +3426,15 @@
     "semantic_hash": ""
   },
   "docs/tsetmc-m3b2-ci.md": {
-    "mtime": 1792523864.0127072,
-    "seen": 1792523876.7775095,
-    "ast_hash": "4193af476bdbb6c399714aede146e215",
+    "mtime": 1792524659.2756813,
+    "seen": 1792524671.6579764,
+    "ast_hash": "561d87613d50336146eb29d48a6a323d",
+    "semantic_hash": ""
+  },
+  "docs/tsetmc-m3b2-premerge-verification.json": {
+    "mtime": 1792524659.2185962,
+    "seen": 1792524671.627594,
+    "ast_hash": "edda2ac74a4f6af4844816402ce2c0f0",
     "semantic_hash": ""
   }
 }
