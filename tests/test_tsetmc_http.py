@@ -15,7 +15,6 @@ from uuid import uuid4
 import asyncpg
 import httpx
 import pytest
-from disposable_postgres import PROOF
 from test_ingest_http import tls_files  # noqa: F401
 from test_sync_worker import worker_tls_server
 from tsetmc_helpers import A, B, imported_rows, tsetmc  # noqa: F401
@@ -391,7 +390,11 @@ async def test_actual_child_process_death_and_replay(ingress_tsetmc, tmp_path, b
     i = ingress_tsetmc
     value = i.t.batch()
     config = tmp_path / "private-child.json"
-    proof = json.loads(await asyncio.to_thread(Path(PROOF).read_text))
+    async with i.t.store.connection() as c:
+        proof = dict(
+            database=await c.fetchval("SELECT current_database()"),
+            server_version_num=await c.fetchval("SHOW server_version_num"),
+        )
     await asyncio.to_thread(
         config.write_text,
         json.dumps(
@@ -420,7 +423,7 @@ from marketdata.tsetmc_wire import canonical
 async def main():
     config=json.loads(Path(sys.argv[1]).read_text())
     c=await asyncpg.connect(config['dsn'])
-    assert await c.fetchval('SHOW server_version_num')=='160001'
+    assert await c.fetchval('SHOW server_version_num')==config['proof']['server_version_num']
     # Restricted writer cannot SHOW data_directory; parent verified the endpoint.
     assert await c.fetchval('SELECT current_database()')==config['proof']['database']
     await c.close()

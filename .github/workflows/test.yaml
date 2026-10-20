@@ -6,22 +6,33 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         timescale: ["true", "false"]
+        include:
+          - timescale: "false"
+            image: postgres:16.1
+          - timescale: "true"
+            image: timescale/timescaledb:2.25.1-pg17
     services:
       postgres:
-        image: timescale/timescaledb:2.25.1-pg17
+        image: ${{ matrix.image }}
         env:
           POSTGRES_USER: marketdata
           POSTGRES_PASSWORD: marketdata
           POSTGRES_DB: marketdata_test
         ports: ["5432:5432"]
         options: >-
+          --label marketdata.ci.task=marketdata-disposable-ci
+          --label marketdata.ci.owner=${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.timescale }}
+          --label marketdata.ci.repository=${{ github.repository }}
           --health-cmd "pg_isready -U marketdata -d marketdata_test"
           --health-interval 5s --health-timeout 3s --health-retries 20
     env:
-      DATABASE_URL: postgresql://marketdata:marketdata@localhost:5432/marketdata_test
-      TEST_DATABASE_URL: postgresql://marketdata:marketdata@localhost:5432/marketdata_test
+      DATABASE_URL: postgresql://marketdata:marketdata@127.0.0.1:5432/marketdata_test
+      TEST_DATABASE_URL: postgresql://marketdata:marketdata@127.0.0.1:5432/marketdata_test
+      MARKETDATA_TEST_PROFILE: github-service
+      MARKETDATA_CI_TIMESCALE: ${{ matrix.timescale }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -33,7 +44,18 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      - run: uv run alembic -x timescale=${{ matrix.timescale }} upgrade head
-      - run: uv run pytest -q
-      - run: uv run alembic downgrade base
-      - run: uv run alembic -x timescale=${{ matrix.timescale }} upgrade head
+      - name: Verify safety guards without database writes
+        run: uv run pytest -q tests/test_disposable_postgres.py tests/test_ci_postgres.py
+      - name: Establish owned service identity before migrations
+        run: uv run python tests/ci_postgres.py --container "${{ job.services.postgres.id }}"
+      - run: uv run python tests/ci_postgres.py --alembic -x timescale=${{ matrix.timescale }} upgrade head
+      - run: uv run pytest -q --junitxml=artifacts/ci-suite.xml
+      - run: uv run python tests/ci_postgres.py --alembic downgrade base
+      - run: uv run python tests/ci_postgres.py --alembic -x timescale=${{ matrix.timescale }} upgrade head
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-evidence-timescale-${{ matrix.timescale }}
+          path: |
+            artifacts/ci-suite.xml
+            artifacts/ci-postgres.json

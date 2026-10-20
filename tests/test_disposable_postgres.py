@@ -13,6 +13,7 @@ import pytest
 
 @pytest.fixture
 def owned(tmp_path, monkeypatch):
+    monkeypatch.setenv("MARKETDATA_TEST_PROFILE", "retained")
     directory = tmp_path / "artifacts/m3b2/pgdata"
     (directory / "global").mkdir(parents=True)
     (directory / "global/pg_control").write_bytes(struct.pack("<Q", int(guard.SYSTEM_IDENTIFIER)))

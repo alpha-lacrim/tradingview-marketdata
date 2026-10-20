@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import re
 import struct
 from datetime import UTC, datetime, timedelta
@@ -87,6 +88,13 @@ def evidence(url, root=ROOT):
 
 
 async def verify_disposable(url, root=ROOT, *, connection=None):
+    profile = os.environ.get("MARKETDATA_TEST_PROFILE", "retained")
+    if profile == "github-service":
+        from ci_postgres import verify
+
+        return await verify(url, root, connection=connection)
+    if profile != "retained":
+        raise RuntimeError("disposable PostgreSQL profile not approved")
     proof = await asyncio.to_thread(evidence, url, root)
     # No application pool, DDL, admission function or fixture runs on this connection.
     c = connection or await asyncpg.connect(

@@ -2664,9 +2664,9 @@
     "semantic_hash": ""
   },
   "tests/test_tsetmc_http.py": {
-    "mtime": 1792504010.5609663,
-    "seen": 1792505201.6160228,
-    "ast_hash": "4615a6827a34baf4fc6d15002b2daa1e",
+    "mtime": 1792523022.128299,
+    "seen": 1792523259.0958886,
+    "ast_hash": "b426c4337f319f0365476d00cf447bdb",
     "semantic_hash": ""
   },
   "tests/test_tsetmc_ingestion.py": {
@@ -2700,9 +2700,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/test.yaml": {
-    "mtime": 1792485230.324666,
-    "seen": 1792497561.6896873,
-    "ast_hash": "a4dba5042ae0b666d923bcbf0edfb2b2",
+    "mtime": 1792523022.128299,
+    "seen": 1792523259.0968819,
+    "ast_hash": "03f69c2ff02a48ae5e3643fa65740cd9",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792521681.7982805,
-    "seen": 1792521710.1444,
-    "ast_hash": "09d0b63b2bfbb58eaf8b9bdd86ccc312",
+    "mtime": 1792523243.9807804,
+    "seen": 1792523259.0968819,
+    "ast_hash": "082b3522786132d4fbd08b481a56b033",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3390,15 +3390,15 @@
     "semantic_hash": ""
   },
   "tests/disposable_postgres.py": {
-    "mtime": 1792504010.5534399,
-    "seen": 1792505201.6079843,
-    "ast_hash": "d3df453e33482aa10aec72bee0781a39",
+    "mtime": 1792523022.1270108,
+    "seen": 1792523259.0888944,
+    "ast_hash": "0114520066568dac5b77aeac4333ae7d",
     "semantic_hash": ""
   },
   "tests/test_disposable_postgres.py": {
-    "mtime": 1792504046.4879415,
-    "seen": 1792505201.6129868,
-    "ast_hash": "3cd04b782c7a1b879330b180a720b9f0",
+    "mtime": 1792523022.1277955,
+    "seen": 1792523259.092812,
+    "ast_hash": "af8532efc201a8c894b73b87e8b33ee3",
     "semantic_hash": ""
   },
   "docs/tsetmc-m3b2-remediation.md": {
@@ -3411,6 +3411,24 @@
     "mtime": 1792505805.390846,
     "seen": 1792521710.0904598,
     "ast_hash": "5320811d068f7b9a508831a6a7e85c57",
+    "semantic_hash": ""
+  },
+  "tests/ci_postgres.py": {
+    "mtime": 1792523144.0682223,
+    "seen": 1792523259.0888944,
+    "ast_hash": "bee2c6e0ff8fea33f372e3e1fce7f746",
+    "semantic_hash": ""
+  },
+  "tests/test_ci_postgres.py": {
+    "mtime": 1792523144.0682223,
+    "seen": 1792523259.092812,
+    "ast_hash": "1357cc5505911ceb351dd429d2f91b9b",
+    "semantic_hash": ""
+  },
+  "docs/tsetmc-m3b2-ci.md": {
+    "mtime": 1792523243.979765,
+    "seen": 1792523259.1075027,
+    "ast_hash": "ebf6a9a51caf6c75ad6e2a44d96e656d",
     "semantic_hash": ""
   }
 }

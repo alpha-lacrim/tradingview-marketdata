@@ -1,4 +1,22 @@
-# Current state — 2026-10-20, M3B-2 feature-branch review checkpoint
+# Current state — 2026-10-20, M3B-2 CI ownership correction
+
+Published checkpoint `bbef28f5c8e44a2a9f630a097542a42b63f8b319` is on
+`codex/tsetmc-m3b2`; draft PR #3 targets main. Pre-merge scrutiny found REVIEW-01:
+the retained Windows-only guard rejects GitHub's Linux database fixture. Both
+matrix logs in Actions39477219485 show484 passed/356 setup errors. This is a CI
+regression, not a green suite or a failure of the retained local827/9 evidence.
+
+Owner granted discretion to resolve the blocker and complete the reviewed PR
+flow. The correction adds a separate positive GitHub service ownership profile;
+the original retained-cluster guard remains intact. Read docs/tsetmc-m3b2-ci.md
+for physical/container/live proof, mutation ordering, tests and actual CI results.
+Fake-only guard/wire140 pass, Ruff/format442 and strict mypy61 pass. First proof
+bootstrap test failed because its data-directory field was omitted; corrected.
+No local server/database change. Wait for actual CI results before merging.
+The separate GitHub Codex review request is pending, not an independent approval.
+No release, deployment, production migration, source-system change or new milestone.
+
+## Published implementation and remediation evidence
 
 Worktree `C:/Users/Pouyan/PycharmProjects/tradingview-m3b2`, branch
 `codex/tsetmc-m3b2`, implementation/verification base `e114a25be8679451f6064ad1fb03c0ef6a8aaefe`.
@@ -8,7 +26,7 @@ corrections. Existing verification JSON inventories retain their original pre-co
 do not regenerate evidence merely to replace its base SHA with the resulting commit ID.
 Read docs/tsetmc-m3b2-remediation.md
 and its JSON for exact changes, counts, failures, preservation and remaining gates.
-No main-branch merge, tag, release, deployment, source-system change, M3B-3 or M3B-4 is authorized.
+The original checkpoint did not merge main, tag, release, deploy or begin another milestone.
 
 F01 checks full states against retained previous/successor revision evidence in both
 arrival orders. F03 validates positions from all immutable daily aliases before any
