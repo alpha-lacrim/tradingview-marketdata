@@ -8,13 +8,18 @@ The source companion fix separates delivery transactions from the collector's
 lifetime instrument lock and strengthens acknowledged-receipt continuity checks.
 No company schema, provider transport or frozen release changed.
 
-Local review validation:514 passed,365 skipped (database-dependent/optional),
-Ruff/format and strict mypy passed. Four capacity regressions reproduced the
-pre-fix failure; these and the Node adapter tests now pass. PostgreSQL/Timescale
-CI qualification is required before integrating this follow-up to main.
+Final review runtimef94b4c5 passed GitHub run39597362733:
+https://github.com/alpha-lacrim/tradingview-marketdata/actions/runs/39597362733
+PostgreSQL16.1:875 passed,8 skipped; TimescalePG17.7:878 passed,5 skipped.
+Both jobs passed lint, strict mypy, ownership safeguards and fresh upgrade,
+downgrade-base and re-upgrade. Local514 passed,365 skipped. Four capacity
+regressions reproduced the pre-fix failure; these and the Node adapter checks pass.
+This final evidence update changes documentation only.
 
 User approved integrating both repositories to main; no production is active.
-TSETMC af5e180 is already on source main. This company implementation is based
+TSETMC fixes are merged through PR #1; source main092f1e3 records runtime9bee3ce,
+local372 tests, final19 targeted checks and2 portable restore checks, plus green
+Windows/Linux/PostgreSQL CI39597489566. This company implementation is based
 on audited main6c8253d3 and preserves its migration0011, nine tables, financial
 constraints, immutable evidence, permissions, fenced recovery and event retention.
 Do NOT merge the older c71c3f07 branch's incompatible alternate migration0011.
