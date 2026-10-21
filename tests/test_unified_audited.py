@@ -6,6 +6,7 @@ import json
 from datetime import UTC, datetime, timedelta
 
 import httpx
+import pytest
 from test_market_stream import HEADERS, ORIGIN, server, ws_url
 from test_tsetmc_http import ingress_tsetmc, upload  # noqa: F401
 from tsetmc_helpers import A, tsetmc  # noqa: F401
@@ -13,6 +14,16 @@ from websockets.asyncio.client import connect
 
 from marketdata.config import Settings
 from marketdata.persistence import Store
+
+
+@pytest.fixture(autouse=True)
+async def clean_disposable_imports(store):
+    # store verifies owned disposable SQL identity before any fixture mutation.
+    try:
+        yield
+    finally:
+        async with store.connection() as c:
+            await c.execute("TRUNCATE instruments,ingest_producers CASCADE")
 
 
 async def test_generated_setup_is_atomic_and_refuses_reenrollment(store, tmp_path):
