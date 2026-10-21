@@ -104,9 +104,14 @@ async def test_worker_alias_reads_replay_and_retention_floor(ingress_tsetmc):  #
             status = i.t.batch("status")
             observation = status["records"][0]["observation"]
             now = datetime.now(UTC)
-            observation["captured_at"] = (now - timedelta(seconds=1)).isoformat()
-            observation["expires_at"] = (now + timedelta(seconds=60)).isoformat()
-            assert (await upload(i, status, name="batches")).status_code == 200
+            observation["captured_at"] = (
+                (now - timedelta(seconds=1)).isoformat().replace("+00:00", "Z")
+            )
+            observation["expires_at"] = (
+                (now + timedelta(seconds=60)).isoformat().replace("+00:00", "Z")
+            )
+            response = await upload(i, status, name="batches")
+            assert response.status_code == 200, response.text
             for _ in range(100):
                 change = json.loads(await ws.recv())
                 if change.get("items"):
