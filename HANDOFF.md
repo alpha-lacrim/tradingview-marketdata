@@ -1,5 +1,18 @@
 # Unified dashboard on audited storage - 2026-10-21
 
+Review follow-up: Iranian paginated reads now enforce API_MAX_ROWS before SQL.
+The shared client preserves provider_symbol, supplies the required international
+WebSocket subscription command and REST replay method, and rejects unsupported
+international WebSocket resume cursors rather than silently dropping them.
+The source companion fix separates delivery transactions from the collector's
+lifetime instrument lock and strengthens acknowledged-receipt continuity checks.
+No company schema, provider transport or frozen release changed.
+
+Local review validation:514 passed,365 skipped (database-dependent/optional),
+Ruff/format and strict mypy passed. Four capacity regressions reproduced the
+pre-fix failure; these and the Node adapter tests now pass. PostgreSQL/Timescale
+CI qualification is required before integrating this follow-up to main.
+
 User approved integrating both repositories to main; no production is active.
 TSETMC af5e180 is already on source main. This company implementation is based
 on audited main6c8253d3 and preserves its migration0011, nine tables, financial
@@ -13,7 +26,7 @@ INGEST also needs TSETMC_INGEST_ENABLED. Atomic setup uses audited administrativ
 binding/provision functions with explicit source identity/units/approval evidence.
 Read docs/unified-dashboard-flow.md and examples/unified-dashboard.mjs.
 
-Final application/test code d21dcb1e passed GitHub run39563435607:
+Prior integrated application/test code d21dcb1e passed GitHub run39563435607:
 https://github.com/alpha-lacrim/tradingview-marketdata/actions/runs/39563435607
 PostgreSQL16.1:871 passed,8 skipped; TimescalePG17.7:874 passed,5 skipped.
 BOTH passed lint, format, strict mypy, ownership guards, upgrade, downgrade-base
@@ -23,7 +36,7 @@ cleanup before downgrade; those failures remain in CI history. Runtime validatio
 and production downgrade protection were preserved. Final fixture cleanup uses
 only the shared positively verified disposable store. No database safety bypass.
 
-This subsequent handoff update changes documentation only. Original working
+Original working
 checkout/user edits, source pilot, databases and frozen releases remain untouched.
 No production or live collection was activated. Actual company TLS/login, genuine
 feed selection/coverage, source rights and restore/cutover remain deployment gates.

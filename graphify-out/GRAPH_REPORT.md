@@ -1,29 +1,29 @@
 # Graph Report - tradingview-main-consolidation  (2026-10-21)
 
 ## Corpus Check
-- 564 files · ~1,166,018 words
+- 565 files · ~1,166,321 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 50 file(s) not represented in the graph (top: (none) 18, .lock 8, .ini 6)
 
 ## Summary
-- 6779 nodes · 13464 edges · 343 communities (211 shown, 132 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 536 edges (avg confidence: 0.88)
+- 6788 nodes · 13479 edges · 363 communities (229 shown, 134 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 537 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d21dcb1e`
+- Built from commit: `c0ba9e1b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- time
-- pathlib
+- benchmark_live_pool.py
+- json
 - src/marketdata/api.py
 - pathlib
 - marketdata-fastapi/tests/test_api_v1.py
 - datetime
-- tests/test_market_stream.py
-- socket
+- bar
+- fastapi
 - SyncWorker
 - Store
 - typing
@@ -40,7 +40,7 @@
 - src/marketdata/reconciliation.py
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/reconciliation.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/reconciliation.py
-- make_candle
+- marketdata-fastapi/tests/test_market_stream.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/databento.py
 - Store
 - test_candle_pipeline.py
@@ -73,8 +73,8 @@
 - test_dual_ingestion.py
 - marketdata-fastapi/tests/test_standalone_api.py
 - tsetmc_wire.py
-- datetime
-- marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview_candles.py
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/sync_worker.py
+- src/marketdata/providers/tradingview_candles.py
 - README.md
 - Store
 - src/marketdata/ingestion.py
@@ -83,6 +83,7 @@
 - test_process_separation.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/ingestion.py
 - src/marketdata/candle_ingestion.py
+- src/marketdata/market_stream.py
 - marketdata-fastapi/src/marketdata/ingestion.py
 - test_tsetmc_ingestion.py
 - create_app
@@ -95,7 +96,7 @@
 - make_pool
 - test_ingestion.py
 - test_providers.py
-- SyncWorker
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/api_v1.py
 - Store
 - pytest
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/benchmark.py
@@ -118,7 +119,7 @@
 - Market Data REST and WebSocket API v1
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/api_v1.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/sample_data.py
-- CandleConnectionPool
+- export_fastapi_distribution.py
 - marketdata-fastapi/src/marketdata/sample_data.py
 - src/marketdata/sample_data.py
 - test_release_foundation.py
@@ -128,7 +129,7 @@
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/collector.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/ingest_auth.py
 - tsetmc_helpers.py
-- .__call__
+- benchmark_live_capacity.py
 - src/marketdata/providers/factory.py
 - decimal
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/factory.py
@@ -136,7 +137,7 @@
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/events.py
 - process_isolation_worker.py
 - src/marketdata/providers/binance.py
-- render_event
+- _create_app
 - src/marketdata/cli.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/binance.py
 - retrieve
@@ -150,17 +151,17 @@
 - src/marketdata/events.py
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/ws_models.py
 - FastAPI v1.1 — Milestone 4 verification
-- marketdata-fastapi/src/marketdata/api_v1.py
+- tests/test_market_stream.py
 - install_marketdata_proxy
 - marketdata-fastapi/tests/browser-marketdata.test.mjs
 - Replay
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/session_recovery.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/session_recovery.py
-- src/marketdata/api_v1.py
+- math
 - src/marketdata/providers/tradingview.py
-- observe_dual_ingestion.py
+- re
 - probe_native_history.py
-- test_real_processes_restart_independently_with_two_api_workers
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview_candles.py
 - .acceptance
 - src/marketdata/session_recovery.py
 - SyncState
@@ -173,14 +174,14 @@
 - marketdata-fastapi/src/marketdata/candles.py
 - marketdata_socket
 - MarketHub
-- .__call__
+- time
 - FastAPI Batch 2 — completion report
-- MockMarketDataProvider
-- .quotes
+- test_instrument_activation.py
+- benchmark_api_rest.py
 - TSETMC M3B-2 company INGEST and storage
 - dataclasses
 - test_recovery_fanout.py
-- qualify_api.py
+- asyncio
 - Batch 4 employer qualification report — 2026-10-14
 - FastAPI v1.1 integration — Phase A audit and design
 - strict_json
@@ -192,10 +193,10 @@
 - marketdata-fastapi/src/marketdata/sessions.py
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/sessions.py
 - Experimental TradingView guest market data
-- marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview.py
+- benchmark_candle_retrieval.py
 - reconcile_candles.py
 - marketdata-fastapi-v1.1.0rc1/src/marketdata/price_selection.py
-- smoke_tradingview_candles.py
+- test_live_pool_benchmark.py
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/price_selection.py
 - src/marketdata/price_selection.py
 - marketdata-fastapi/src/marketdata/price_selection.py
@@ -204,7 +205,7 @@
 - startMarketData
 - test_native_candles.py
 - startMarketData
-- TradingViewGuestProvider
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview.py
 - src/marketdata/sessions.py
 - Configurable candle connection pool
 - Native candle retrieval scalability
@@ -216,7 +217,7 @@
 - Tick
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview_pipeline.py
 - smoke_production_tradingview.py
-- marketdata-fastapi-v1.1.0rc1/src/marketdata/config.py
+- pydantic
 - Registry
 - Registry
 - Registry
@@ -228,25 +229,24 @@
 - AGENTS.md
 - marketdata-fastapi/tests/conftest.py
 - marketdata-fastapi/src/marketdata/config.py
-- marketdata_socket
+- verify_v11_release_pipeline.py
 - check_refs
 - test_api_v1_operations.py
 - SyncHTTP
 - src/marketdata/providers/definitions.py
 - FastAPI v1.1 — milestone 1 destination foundation
 - Platform reference
-- TSETMC M3B-2 company INGEST and storage
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/release_admin.py
 - test_ordinary_scaling.py
 - SyncHTTP
 - test_candle_pool_benchmark.py
-- FrameDecoder
 - service
 - src/marketdata/remote_status.py
-- test_ci_postgres.py
+- verify_disposable
 - Company frontend handoff
 - SyncConfig
-- test_disposable_postgres.py
-- FakeSocket
+- prices_socket
+- report_v11_qualification.py
 - src/marketdata/providers/tradingview_pipeline.py
 - WebSocket market data v1
 - Milestone 3A: local source capture and milestone 3B contract
@@ -261,36 +261,49 @@
 - Current state - 2026-10-17
 - Operations, backup/restore, reconciliation and application rollback
 - run
-- chart_data
-- chart_data
+- test_live_capacity_harness.py
+- tests/conftest.py
 - test_tsetmc_http.py
-- chart_data
+- v11_qualification_process.py
 - re
+- parse_bar
 - api-batch3-verification.md
 - marketdata-collector-sync-v1.1.0rc1/src/marketdata/quote_snapshots.py
+- importlib
 - FastAPI v1.1 — Milestone 3B review
 - Ordinary collector instrument activation
+- marketdata-fastapi/README.md
 - src/marketdata/quote_snapshots.py
 - 16. Database model
-- test_v11_qualification.py
+- pathlib
 - SyncConfig
-- pydantic_settings
+- marketdata-fastapi-v1.1.0rc1/src/marketdata/quote_snapshots.py
 - collections_abc
+- MockMarketDataProvider
 - Multi-asset market data
 - tracing_store
+- WebSocket market data v1
 - Repository layout and existing checkout migration
 - Verified collector / FastAPI Batch 1 integration
 - collector/README.md
 - FastAPI Batch 1: independent processes
+- inspect_tradingview_ticks.py
 - 30. Testing
+- marketdata-collector-sync-v1.1.0rc1/src/marketdata/production.py
 - Authorized commercial TradingView preparation
+- datetime
+- Company ingestion protocol v1 (FastAPI v1.1, milestone 2)
 - collector
 - Native availability investigation — 2026-10-12
 - 0011_tsetmc_ingestion.py
 - 13. Timestamp handling
 - Implemented execution protocol
-- Live guest candles through PostgreSQL
+- FastAPI v1.1 — milestone 2.1 review
+- InjectedQuotes
 - company/INSTALL-COMPANY.md
+- chart_data
+- events
+- FastAPI v1.1 — milestone 2 review
 - CODEX.md
 - marketdata-collector-sync-v1.1.0rc1/VERIFY.md
 - common/COLLECTOR-TRANSITION.md
@@ -303,7 +316,11 @@
 - M3B-2 disposable CI ownership
 - Shared dashboard integration on audited company storage
 - Simultaneous TradingView collection — 2026-10-14
+- Company ingestion runtime — milestones 2, 2.1 and 3B
 - Candle hardening verification - 2026-10-07
+- test_pipeline_interleaving_two_requests_routes_exact_symbols
+- brokers
+- test_failed_handshake_releases_the_registered_client_slot
 - Completed-development consolidation into main
 
 ## God Nodes (most connected - your core abstractions)
@@ -333,15 +350,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (343 total, 132 thin omitted)
+## Communities (363 total, 134 thin omitted)
 
-### Community 0 - "time"
-Cohesion: 0.03
-Nodes (26): main(), plan_summary(), visit(), timing(), probe(), rss_bytes(), run(), summarize() (+18 more)
+### Community 0 - "benchmark_live_pool.py"
+Cohesion: 0.08
+Nodes (7): rss_bytes(), discover(), FaultWorker, RecordingStore, resource_sample(), run(), stage_summary()
 
-### Community 1 - "pathlib"
-Cohesion: 0.03
-Nodes (39): main(), test_complete_file_manifest(), test_source_track_and_worker_are_present(), digest(), package(), test_exported_source_hashes(), test_openapi_contract_equals_verified_snapshot(), main() (+31 more)
+### Community 1 - "json"
+Cohesion: 0.05
+Nodes (14): main(), test_exported_source_hashes(), test_openapi_contract_equals_verified_snapshot(), main(), main(), main(), publish(), freeze() (+6 more)
 
 ### Community 2 - "src/marketdata/api.py"
 Cohesion: 0.06
@@ -349,27 +366,23 @@ Nodes (40): authorized(), Candle, CandlePage, Command, create_app(), _create_app
 
 ### Community 3 - "pathlib"
 Cohesion: 0.04
-Nodes (34): main(), create(), main(), main(), command(), DeploymentSettings, main(), launch() (+26 more)
+Nodes (26): main(), create(), main(), launch(), main(), command(), DeploymentSettings, main() (+18 more)
 
 ### Community 4 - "marketdata-fastapi/tests/test_api_v1.py"
-Cohesion: 0.05
-Nodes (55): forbidden(), make_candle(), snapshot(), api_client(), assert_chart_types(), brokers(), candle(), persist() (+47 more)
+Cohesion: 0.11
+Nodes (27): make_candle(), api_client(), assert_chart_types(), candle(), persist(), test_all_native_intervals_exact_readback_null_volume(), test_bulk_100_sources_constant_query_count(), test_bulk_latest_quote_candle_unavailable_and_source_independence() (+19 more)
 
 ### Community 5 - "datetime"
-Cohesion: 0.03
-Nodes (25): run(), smoke(), smoke(), audit(), run(), distribution(), inspect_container(), matches() (+17 more)
+Cohesion: 0.05
+Nodes (18): audit(), run(), distribution(), inspect_container(), matches(), resources(), run(), snapshot() (+10 more)
 
-### Community 6 - "tests/test_market_stream.py"
-Cohesion: 0.13
-Nodes (23): bar(), receive(), server(), settings(), subscribe(), test_authentication_and_origin_fail_before_registration(), test_commands_reject_malformed_or_unbounded_shapes(), test_commands_unknowns_repeats_unsubscribe_snapshot_and_disconnect() (+15 more)
-
-### Community 7 - "socket"
-Cohesion: 0.14
-Nodes (6): bff_server(), main(), bff_server(), test_provisional_adapter_denies_invalid_origin_or_missing_cookie_before_upstream(), test_provisional_cookie_adapter_relays_rest_ws_and_revoked_session_closes(), simulated_session()
+### Community 6 - "bar"
+Cohesion: 0.32
+Nodes (16): bar(), receive(), server(), subscribe(), test_commands_unknowns_repeats_unsubscribe_snapshot_and_disconnect(), test_committed_candle_quote_correction_and_rest_agree(), test_concurrent_commit_order_never_loses_live_or_reconnected_events(), test_disconnect_api_restart_and_late_old_correction_rest_recovery() (+8 more)
 
 ### Community 8 - "SyncWorker"
-Cohesion: 0.16
-Nodes (3): run(), SyncWorker, work()
+Cohesion: 0.09
+Nodes (4): main(), run(), SyncWorker, work()
 
 ### Community 9 - "Store"
 Cohesion: 0.07
@@ -380,8 +393,8 @@ Cohesion: 0.11
 Nodes (7): field_order(), field_order(), lifespan(), field_order(), privilege(), validate_permissions(), test_real_restricted_roles_and_new_read_disabled_legacy_routes()
 
 ### Community 11 - "marketdata-fastapi/src/marketdata/api.py"
-Cohesion: 0.06
-Nodes (40): authorized(), Candle, CandlePage, Command, create_app(), _create_app(), authenticate(), candles() (+32 more)
+Cohesion: 0.10
+Nodes (12): Candle, CandlePage, Command, candles(), health(), ticks(), decode_cursor(), encode_cursor() (+4 more)
 
 ### Community 12 - "src/marketdata/replication_models.py"
 Cohesion: 0.07
@@ -396,8 +409,8 @@ Cohesion: 0.07
 Nodes (19): Batch, CandleObservation, CandleRecord, canonical_bytes(), CapturedHealth, CapturedSymbolHealth, CoverageObservation, CoverageRecord (+11 more)
 
 ### Community 15 - "qualify_v11_pipeline.py"
-Cohesion: 0.08
-Nodes (13): arguments(), percentiles(), task_database(), database_evidence(), main(), measurements(), records(), seconds() (+5 more)
+Cohesion: 0.13
+Nodes (4): arguments(), business_registry(), free_port(), process_counters()
 
 ### Community 16 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/replication_models.py"
 Cohesion: 0.07
@@ -408,12 +421,12 @@ Cohesion: 0.07
 Nodes (32): test_health_serialization_and_latest_receipt_freshness(), captured_messages(), Clock, clock(), make_provider(), observe_all(), quote_for(), Socket (+24 more)
 
 ### Community 18 - "create_router"
-Cohesion: 0.21
-Nodes (15): completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments(), latest_candles() (+7 more)
+Cohesion: 0.10
+Nodes (17): chart_data(), completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments() (+9 more)
 
 ### Community 20 - "test_sync_worker.py"
-Cohesion: 0.08
-Nodes (37): test_selection_stale_quote_receipt_only_and_future_candle(), make_candle(), destination_process(), snapshot(), test_0009_to_0010_additive_preserves_committed_candles(), test_bounded_backlog_quotes_fairness_and_restart_progress(), test_bounded_bytes_partial_page_and_quote_gaps(), test_candle_reconciliation_hash_preserves_arbitrary_decimal_precision() (+29 more)
+Cohesion: 0.04
+Nodes (72): Previous and new architecture, Operational health and freshness, Crash-test harness timing, migrate(), test_populated_0006_upgrade_preserves_market_events_and_seeds_noop_heads(), ingress(), tls_files(), make_candle() (+64 more)
 
 ### Community 21 - "src/marketdata/reconciliation.py"
 Cohesion: 0.06
@@ -427,9 +440,9 @@ Nodes (8): candle_fingerprint(), exact_decimal_text(), reconcile(), ReconcileKey
 Cohesion: 0.06
 Nodes (8): candle_fingerprint(), exact_decimal_text(), reconcile(), ReconcileKey, ReconcileRequest, revision_summary(), DestinationWriter, ReplicationError
 
-### Community 24 - "make_candle"
-Cohesion: 0.10
-Nodes (28): migrate(), test_populated_0006_upgrade_preserves_market_events_and_seeds_noop_heads(), extend(), quote(), source(), test_bounded_storage_backpressure_cleanup_and_safe_cursors(), test_caller_catching_capture_error_cannot_commit_partial_helper_changes(), test_candle_and_quote_rollback_then_retry() (+20 more)
+### Community 24 - "marketdata-fastapi/tests/test_market_stream.py"
+Cohesion: 0.15
+Nodes (21): bar(), receive(), server(), settings(), subscribe(), test_authentication_and_origin_fail_before_registration(), test_commands_reject_malformed_or_unbounded_shapes(), test_commands_unknowns_repeats_unsubscribe_snapshot_and_disconnect() (+13 more)
 
 ### Community 25 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/databento.py"
 Cohesion: 0.05
@@ -440,11 +453,11 @@ Cohesion: 0.08
 Nodes (3): order_ns(), Store, tick_record()
 
 ### Community 27 - "test_candle_pipeline.py"
-Cohesion: 0.06
-Nodes (30): reconnect(), no_receiver_leaks(), pipeline(), test_auth_send_disconnect_is_measured_and_reduces_window(), connect(), test_auth_send_timeout_retains_owned_socket_for_bounded_cleanup(), test_bounded_window_large_universe_exact_routing(), test_connect_rejection_backs_off_without_creating_more_connections() (+22 more)
+Cohesion: 0.09
+Nodes (23): no_receiver_leaks(), pipeline(), test_auth_send_disconnect_is_measured_and_reduces_window(), connect(), test_auth_send_timeout_retains_owned_socket_for_bounded_cleanup(), test_bounded_window_large_universe_exact_routing(), test_connect_rejection_backs_off_without_creating_more_connections(), test_diagnostics_distinguish_raw_target_from_completion_filter() (+15 more)
 
 ### Community 28 - "tests/test_api_v1.py"
-Cohesion: 0.09
+Cohesion: 0.10
 Nodes (28): api_client(), assert_chart_types(), brokers(), candle(), persist(), test_all_native_intervals_exact_readback_null_volume(), test_bulk_100_sources_constant_query_count(), test_bulk_latest_quote_candle_unavailable_and_source_independence() (+20 more)
 
 ### Community 29 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/source_capture.py"
@@ -465,7 +478,7 @@ Nodes (40): authorized(), Candle, CandlePage, Command, create_app(), _create_app
 
 ### Community 34 - "create_app"
 Cohesion: 0.06
-Nodes (21): body(), create_app(), admit_session(), handler(), endpoint(), http_error(), ingestion_openapi(), references() (+13 more)
+Nodes (22): body(), create_app(), admit_session(), handler(), endpoint(), http_error(), ingestion_openapi(), references() (+14 more)
 
 ### Community 35 - "CODEX.md"
 Cohesion: 0.05
@@ -492,8 +505,8 @@ Cohesion: 0.09
 Nodes (5): MarketDataProvider, PermanentConnectionError, PermanentProviderError, ProviderHealth, SymbolHealth
 
 ### Community 41 - "test_candle_reliability.py"
-Cohesion: 0.09
-Nodes (19): setup(), test_backfill_provenance_survives_late_correction(), test_corrections_idempotent_audited_and_roll_up(), test_db_read_outage_recovery_uses_actual_state(), test_db_write_failure_never_acknowledged_before_success(), test_first_last_and_database_timings_are_separate(), slow_write(), test_historical_reconciliation_proves_partitions() (+11 more)
+Cohesion: 0.11
+Nodes (18): setup(), test_backfill_provenance_survives_late_correction(), test_corrections_idempotent_audited_and_roll_up(), test_db_read_outage_recovery_uses_actual_state(), test_db_write_failure_never_acknowledged_before_success(), test_first_last_and_database_timings_are_separate(), slow_write(), test_historical_reconciliation_proves_partitions() (+10 more)
 
 ### Community 42 - "marketdata-fastapi/src/marketdata/providers/candle_pool.py"
 Cohesion: 0.08
@@ -504,8 +517,8 @@ Cohesion: 0.18
 Nodes (6): append_events(), decode_watermark(), encode_watermark(), event_page(), persisted_snapshot(), validate_watermark()
 
 ### Community 44 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/candle_pool.py"
-Cohesion: 0.12
-Nodes (3): PoolLimits, RequestBudget, Worker
+Cohesion: 0.08
+Nodes (6): CandleConnectionPool, collect(), PoolLimits, RequestBudget, retry_after_seconds(), Worker
 
 ### Community 45 - "Milestone 3B: independent durable HTTPS worker"
 Cohesion: 0.06
@@ -516,12 +529,12 @@ Cohesion: 0.06
 Nodes (31): Batch envelope and canonical values, Company ingestion protocol v1 (FastAPI v1.1, milestone 2), Limits and errors, Receipts and retry policy, Routes, Session and ownership fencing, Transport and authentication, Company ingestion runtime — milestones 2, 2.1 and 3B (+23 more)
 
 ### Community 48 - "test_session_recovery.py"
-Cohesion: 0.15
-Nodes (21): transfer(), expire(), new_credential(), replacement(), state(), test_actual_tls_ingestion_process_kill_and_restart_during_recovery(), test_authenticated_other_producer_cannot_recover_someone_elses_streams(), test_competing_recoveries_have_one_winner_and_same_request_race_replays() (+13 more)
+Cohesion: 0.14
+Nodes (22): transfer(), expire(), new_credential(), replacement(), state(), test_actual_tls_ingestion_process_kill_and_restart_during_recovery(), start(), test_authenticated_other_producer_cannot_recover_someone_elses_streams() (+14 more)
 
 ### Community 49 - "test_ingest_http.py"
-Cohesion: 0.10
-Nodes (15): ingress(), test_body_streaming_record_limits_and_timeout_rolls_back(), held(), test_captured_status_projection_is_source_specific_and_expires(), test_coverage_http_identity_authorization_concurrency_and_backpressure(), test_global_rate_limit_across_instances_and_restart(), test_http_atomic_retry_conflict_lost_ack_and_server_restart(), test_https_auth_cross_role_and_sanitized_validation() (+7 more)
+Cohesion: 0.11
+Nodes (13): test_body_streaming_record_limits_and_timeout_rolls_back(), held(), test_captured_status_projection_is_source_specific_and_expires(), test_coverage_http_identity_authorization_concurrency_and_backpressure(), test_global_rate_limit_across_instances_and_restart(), test_http_atomic_retry_conflict_lost_ack_and_server_restart(), test_https_auth_cross_role_and_sanitized_validation(), test_session_admission_renewal_expiry_rotation_and_revocation() (+5 more)
 
 ### Community 50 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/domain.py"
 Cohesion: 0.12
@@ -540,24 +553,24 @@ Cohesion: 0.12
 Nodes (13): AssetClass, DataStatus, from_ns(), Instrument, InstrumentType, Model, normalize(), parse_timestamp_ns() (+5 more)
 
 ### Community 54 - "test_dual_ingestion.py"
-Cohesion: 0.06
-Nodes (14): eventually(), observer_module(), paused_test_database(), QuoteSocket, released_api(), test_dual_collector_to_exact_released_api_outage_recovery_replay(), quote_connect(), test_dual_factory_keeps_both_registries_and_independent_health() (+6 more)
+Cohesion: 0.05
+Nodes (15): BlockingCandles, eventually(), observer_module(), paused_test_database(), QuoteSocket, released_api(), test_dual_collector_to_exact_released_api_outage_recovery_replay(), quote_connect() (+7 more)
 
 ### Community 56 - "tsetmc_wire.py"
 Cohesion: 0.11
-Nodes (29): register(), comparison(), endpoint(), upload(), canonical(), decode(), reject(), unique() (+21 more)
+Nodes (30): register(), endpoint(), upload(), clocks(), canonical(), decode(), reject(), unique() (+22 more)
 
-### Community 57 - "datetime"
-Cohesion: 0.04
-Nodes (3): main(), run(), main()
+### Community 57 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/sync_worker.py"
+Cohesion: 0.09
+Nodes (4): main(), run(), SyncWorker, work()
 
-### Community 58 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview_candles.py"
-Cohesion: 0.06
-Nodes (6): parse_bar(), TradingViewCandleProvider, validate_source(), parse_bar(), TradingViewCandleProvider, validate_source()
+### Community 58 - "src/marketdata/providers/tradingview_candles.py"
+Cohesion: 0.13
+Nodes (3): parse_bar(), TradingViewCandleProvider, validate_source()
 
 ### Community 59 - "README.md"
-Cohesion: 0.19
-Nodes (3): Batch 4 measured API performance, Native 1-minute candle verification - 2026-10-07, Unified dashboard on audited storage - 2026-10-21
+Cohesion: 0.16
+Nodes (8): Batch 4 measured API performance, Completed paced run, Evidence and interpretation, Initial unpaced result, Live guest candles through PostgreSQL, Reproduction, Native 1-minute candle verification - 2026-10-07, Unified dashboard on audited storage - 2026-10-21
 
 ### Community 63 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/candle_ingestion.py"
 Cohesion: 0.11
@@ -568,20 +581,24 @@ Cohesion: 0.11
 Nodes (4): CandleIngestion, watch_overrun(), CandleStore, is_backfill()
 
 ### Community 65 - "test_process_separation.py"
-Cohesion: 0.09
-Nodes (15): seed_brokers(), test_0004_upgrade_and_status_only_rollback_preserve_all_market_rows(), test_broker_api_reads_during_independent_recovery_keep_quotes_and_gaps_separate(), forbidden(), test_actual_select_only_role_serves_api(), test_api_reads_persisted_identity_history_without_source_access(), test_api_websocket_explicitly_unavailable(), test_collector_metrics_listener_closes_on_shutdown() (+7 more)
+Cohesion: 0.08
+Nodes (16): seed_brokers(), test_0004_upgrade_and_status_only_rollback_preserve_all_market_rows(), test_broker_api_reads_during_independent_recovery_keep_quotes_and_gaps_separate(), forbidden(), test_actual_select_only_role_serves_api(), test_api_reads_persisted_identity_history_without_source_access(), test_api_websocket_explicitly_unavailable(), test_collector_alone_restarts_without_resetting_coverage() (+8 more)
 
 ### Community 67 - "src/marketdata/candle_ingestion.py"
 Cohesion: 0.11
 Nodes (4): CandleIngestion, watch_overrun(), CandleStore, is_backfill()
 
+### Community 68 - "src/marketdata/market_stream.py"
+Cohesion: 0.10
+Nodes (3): create_stream_router(), changes(), render_event()
+
 ### Community 70 - "test_tsetmc_ingestion.py"
-Cohesion: 0.13
-Nodes (31): reconcile(), commit(), current(), quality_state(), rehash(), request(), test_administrative_fences_do_not_rewrite_imports(), test_alias_barriers_do_not_cross_instrument_epochs() (+23 more)
+Cohesion: 0.12
+Nodes (32): reconcile(), commit(), current(), quality_state(), rehash(), request(), test_administrative_fences_do_not_rewrite_imports(), test_alias_barriers_do_not_cross_instrument_epochs() (+24 more)
 
 ### Community 71 - "create_app"
-Cohesion: 0.14
-Nodes (15): body(), create_app(), admit_session(), handler(), endpoint(), http_error(), invalid_request(), receipt() (+7 more)
+Cohesion: 0.09
+Nodes (16): body(), create_app(), admit_session(), handler(), endpoint(), http_error(), invalid_request(), receipt() (+8 more)
 
 ### Community 72 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/oanda.py"
 Cohesion: 0.12
@@ -592,8 +609,8 @@ Cohesion: 0.12
 Nodes (3): bounded_lines(), OandaProvider, parse_price()
 
 ### Community 74 - "record"
-Cohesion: 0.14
-Nodes (14): check_database(), diagnostic_codes(), main(), private(), server(), commit(), recover(), session() (+6 more)
+Cohesion: 0.27
+Nodes (13): check_database(), main(), private(), server(), commit(), recover(), session(), worker() (+5 more)
 
 ### Community 75 - "fastapi-v1.1-milestone5.md"
 Cohesion: 0.08
@@ -604,8 +621,8 @@ Cohesion: 0.12
 Nodes (12): configure_logging(), JsonFormatter, Metrics, configure_logging(), JsonFormatter, Metrics, configure_logging(), JsonFormatter (+4 more)
 
 ### Community 77 - "Pipeline"
-Cohesion: 0.19
-Nodes (6): run(), business_registry(), free_port(), main(), Pipeline, write_json()
+Cohesion: 0.17
+Nodes (5): run(), main(), Pipeline, new_quote(), write_json()
 
 ### Community 78 - "make_pool"
 Cohesion: 0.10
@@ -616,36 +633,36 @@ Cohesion: 0.14
 Nodes (11): BadCredentials, DisconnectOnce, service(), test_monitor_records_application_loop_lag_and_stops_with_service(), test_outage_retains_batch_and_receive_does_not_block(), test_permanent_failure_does_not_stop_other_provider(), test_queue_full_is_visible_and_shutdown_drains(), test_reconnect_restores_subscriptions() (+3 more)
 
 ### Community 80 - "test_providers.py"
-Cohesion: 0.11
-Nodes (3): test_binance_trade_fixture(), test_mock_multi_instrument_stream_and_disconnect(), test_oanda_authentication_not_retried()
+Cohesion: 0.09
+Nodes (5): FakeSocket, test_binance_malformed_and_sequence_gap(), test_binance_trade_fixture(), test_mock_multi_instrument_stream_and_disconnect(), test_oanda_authentication_not_retried()
 
-### Community 82 - "SyncWorker"
-Cohesion: 0.06
-Nodes (20): chart_data(), completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments() (+12 more)
+### Community 82 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/api_v1.py"
+Cohesion: 0.11
+Nodes (16): completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments(), latest_candles() (+8 more)
 
 ### Community 83 - "Store"
 Cohesion: 0.07
 Nodes (4): order_ns(), Store, tick_record(), project_status()
 
 ### Community 84 - "pytest"
-Cohesion: 0.04
-Nodes (34): test_browser_recovery_example(), test_binary_float_input_rejected(), test_configuration_validation(), test_contract_parser_does_not_guess_century(), test_future_requires_concrete_contract(), test_history_cursor_and_window(), test_mock_cannot_claim_realtime(), test_naive_timestamps_rejected() (+26 more)
+Cohesion: 0.05
+Nodes (32): test_browser_recovery_example(), test_binary_float_input_rejected(), test_configuration_validation(), test_contract_parser_does_not_guess_century(), test_future_requires_concrete_contract(), test_history_cursor_and_window(), test_mock_cannot_claim_realtime(), test_naive_timestamps_rejected() (+24 more)
 
 ### Community 87 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/collector.py"
 Cohesion: 0.13
-Nodes (3): Collector, collector_lifespan(), run_collector()
+Nodes (4): Collector, collector_lifespan(), main(), run_collector()
 
 ### Community 88 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/market_stream.py"
 Cohesion: 0.07
 Nodes (6): create_stream_router(), changes(), marketdata_socket(), MarketClient, MarketHub, render_event()
 
 ### Community 89 - "TsetmcError"
-Cohesion: 0.14
-Nodes (7): revisions(), row(), parsed(), timestamp(), TsetmcWriter, clocks(), test_concurrent_journal_commit_order_and_rollback_no_precommit_visibility()
+Cohesion: 0.16
+Nodes (5): revisions(), row(), parsed(), timestamp(), TsetmcWriter
 
 ### Community 90 - "create_app"
-Cohesion: 0.18
-Nodes (12): body(), create_app(), admit_session(), handler(), endpoint(), receipt(), reconcile_state(), recover() (+4 more)
+Cohesion: 0.09
+Nodes (17): body(), create_app(), admit_session(), handler(), endpoint(), http_error(), invalid_request(), receipt() (+9 more)
 
 ### Community 93 - "test_databento_sdk.py"
 Cohesion: 0.11
@@ -672,28 +689,28 @@ Cohesion: 0.10
 Nodes (19): Authentication and browser access, Common contracts and limits, Completed historical candles, Coverage, Dedicated read-only database role, Endpoint inventory and compatibility, Frontend and server examples, Go dashboard candle compatibility (+11 more)
 
 ### Community 102 - "create_router"
-Cohesion: 0.22
-Nodes (14): completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments(), latest_candles() (+6 more)
+Cohesion: 0.10
+Nodes (17): chart_data(), completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments() (+9 more)
 
 ### Community 103 - "Market Data REST and WebSocket API v1"
 Cohesion: 0.10
 Nodes (19): Authentication and browser access, Common contracts and limits, Completed historical candles, Coverage, Dedicated read-only database role, Endpoint inventory and compatibility, Frontend and server examples, Go dashboard candle compatibility (+11 more)
 
 ### Community 104 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/api_v1.py"
-Cohesion: 0.12
-Nodes (16): completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments(), latest_candles() (+8 more)
+Cohesion: 0.10
+Nodes (17): chart_data(), completed_candle(), create_router(), candles(), coverage(), dashboard_candles(), health(), instruments() (+9 more)
 
 ### Community 105 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/sample_data.py"
-Cohesion: 0.19
-Nodes (7): prepare_reader(), publish_quotes(), run(), sample_registry(), SampleSettings, seed_history(), validate_target()
-
-### Community 106 - "CandleConnectionPool"
-Cohesion: 0.16
-Nodes (3): CandleConnectionPool, collect(), retry_after_seconds()
-
-### Community 107 - "marketdata-fastapi/src/marketdata/sample_data.py"
 Cohesion: 0.18
 Nodes (8): main(), prepare_reader(), publish_quotes(), run(), sample_registry(), SampleSettings, seed_history(), validate_target()
+
+### Community 106 - "export_fastapi_distribution.py"
+Cohesion: 0.10
+Nodes (15): digest(), package(), build(), copy(), sha(), digest(), export(), extract() (+7 more)
+
+### Community 107 - "marketdata-fastapi/src/marketdata/sample_data.py"
+Cohesion: 0.10
+Nodes (9): Settings, main(), prepare_reader(), publish_quotes(), run(), sample_registry(), SampleSettings, seed_history() (+1 more)
 
 ### Community 108 - "src/marketdata/sample_data.py"
 Cohesion: 0.18
@@ -712,24 +729,20 @@ Cohesion: 0.07
 Nodes (6): create_stream_router(), changes(), marketdata_socket(), MarketClient, MarketHub, render_event()
 
 ### Community 114 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/collector.py"
-Cohesion: 0.12
-Nodes (5): Collector, collector_lifespan(), main(), run_collector(), main()
+Cohesion: 0.13
+Nodes (4): Collector, collector_lifespan(), main(), run_collector()
 
 ### Community 115 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/ingest_auth.py"
-Cohesion: 0.14
+Cohesion: 0.15
 Nodes (6): Credential, Credentials, Principal, session(), SessionRequest, strict_json()
 
 ### Community 116 - "tsetmc_helpers.py"
-Cohesion: 0.06
-Nodes (12): Grant, boundary(), execute(), main(), provision(), main(), setup(), InstrumentBinding (+4 more)
+Cohesion: 0.10
+Nodes (14): Grant, boundary(), execute(), main(), provision(), main(), setup(), InstrumentBinding (+6 more)
 
-### Community 117 - ".__call__"
-Cohesion: 0.12
-Nodes (5): http_error(), invalid_request(), failure(), IngestGuard, guarded_send()
-
-### Community 119 - "decimal"
-Cohesion: 0.12
-Nodes (3): definition_entry(), is_snapshot(), materialize()
+### Community 117 - "benchmark_live_capacity.py"
+Cohesion: 0.11
+Nodes (5): cycle(), run(), stage_passes(), summarize(), run()
 
 ### Community 121 - "src/marketdata/providers/candle_pool.py"
 Cohesion: 0.08
@@ -739,20 +752,20 @@ Nodes (5): CandleConnectionPool, collect(), PoolLimits, RequestBudget, Worker
 Cohesion: 0.18
 Nodes (6): append_events(), decode_watermark(), encode_watermark(), event_page(), persisted_snapshot(), validate_watermark()
 
-### Community 125 - "render_event"
-Cohesion: 0.20
-Nodes (3): create_stream_router(), changes(), render_event()
+### Community 125 - "_create_app"
+Cohesion: 0.13
+Nodes (21): _create_app(), authenticate(), database_error(), error_response(), http_error(), instrument(), instruments(), latest() (+13 more)
 
 ### Community 126 - "src/marketdata/cli.py"
 Cohesion: 0.16
 Nodes (5): discover_oanda(), import_databento(), main(), oanda_entry(), write_registry()
 
 ### Community 128 - "retrieve"
-Cohesion: 0.29
-Nodes (8): retrieve(), current_generation(), dispatch(), error_seen(), receive(), release(), remember(), send()
+Cohesion: 0.17
+Nodes (10): marketdata_socket(), receiver(), retrieve(), current_generation(), dispatch(), error_seen(), receive(), release() (+2 more)
 
 ### Community 129 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/ingest_auth.py"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (6): Credential, Credentials, Principal, session(), SessionRequest, strict_json()
 
 ### Community 130 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/cli.py"
@@ -783,17 +796,21 @@ Nodes (11): CandleEvent, ChangePage, Envelope, Heartbeat, MarketCommand, PriceEv
 Cohesion: 0.11
 Nodes (15): Actual passing tests and separate skips, Evidence levels and environment, Failure recovery, ownership and reconciliation, FastAPI v1.1 — Milestone 4 verification, Financial results and trace examples, Measured workload and proposed service targets, Narrow corrective change and changed files, Preservation, exit gate and remaining release work (+7 more)
 
+### Community 139 - "tests/test_market_stream.py"
+Cohesion: 0.12
+Nodes (6): settings(), test_authentication_and_origin_fail_before_registration(), test_commands_reject_malformed_or_unbounded_shapes(), test_failed_handshake_releases_the_registered_client_slot(), test_new_subscription_snapshot_barrier_does_not_skip_existing_symbol_events(), test_watermark_validation()
+
 ### Community 140 - "install_marketdata_proxy"
-Cohesion: 0.11
-Nodes (8): install_marketdata_proxy(), allowed(), rest(), websocket_proxy(), session(), test_provisional_adapter_denies_invalid_origin_or_missing_cookie_before_upstream(), test_provisional_cookie_adapter_relays_rest_ws_and_revoked_session_closes(), simulated_session()
+Cohesion: 0.07
+Nodes (11): install_marketdata_proxy(), allowed(), rest(), websocket_proxy(), session(), test_provisional_adapter_denies_invalid_origin_or_missing_cookie_before_upstream(), test_provisional_cookie_adapter_relays_rest_ws_and_revoked_session_closes(), simulated_session() (+3 more)
 
 ### Community 141 - "marketdata-fastapi/tests/browser-marketdata.test.mjs"
 Cohesion: 0.08
-Nodes (6): Socket, MarketDataClient, Socket, calls, client, iran
+Nodes (7): Socket, MarketDataClient, Socket, calls, client, international, iran
 
 ### Community 142 - "Replay"
-Cohesion: 0.07
-Nodes (17): test_overrun_reported_once_and_does_not_spawn_another_cycle(), test_health_reopening_counts_only_expected_minutes_and_clock_regression(), BlockingCandles, test_activation_restart_recovery_removal_and_source_identity(), test_pool_configuration_rejects_unusable_or_out_of_scope_limits(), test_restart_before_first_collection_recovers_from_activation(), Replay, test_candle_database_retry_preserves_bounded_batch() (+9 more)
+Cohesion: 0.11
+Nodes (15): test_overrun_reported_once_and_does_not_spawn_another_cycle(), test_running_cycle_overrun_timer_is_owned_and_cancelled_on_shutdown(), test_health_reopening_counts_only_expected_minutes_and_clock_regression(), test_activation_restart_recovery_removal_and_source_identity(), test_restart_before_first_collection_recovers_from_activation(), Replay, test_candle_database_retry_preserves_bounded_batch(), test_candle_upsert_latest_rollup_and_unsupported_backfill() (+7 more)
 
 ### Community 143 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/session_recovery.py"
 Cohesion: 0.15
@@ -803,33 +820,33 @@ Nodes (4): recover_session(), RecoveryReceipt, RecoveryRequest, RecoveryStream
 Cohesion: 0.15
 Nodes (4): recover_session(), RecoveryReceipt, RecoveryRequest, RecoveryStream
 
+### Community 145 - "math"
+Cohesion: 0.16
+Nodes (6): probe(), run(), summarize(), quantiles(), publish(), summarize_run()
+
 ### Community 146 - "src/marketdata/providers/tradingview.py"
 Cohesion: 0.09
 Nodes (6): retry_after_seconds(), encode_message(), FrameDecoder, observed_decimal(), parse_quote(), TradingViewGuestProvider
 
-### Community 147 - "observe_dual_ingestion.py"
-Cohesion: 0.21
-Nodes (3): main(), observe(), summarize()
+### Community 147 - "re"
+Cohesion: 0.23
+Nodes (5): main(), main(), main(), create(), main()
 
 ### Community 148 - "probe_native_history.py"
 Cohesion: 0.14
 Nodes (3): Capture, idle(), run()
 
-### Community 149 - "test_real_processes_restart_independently_with_two_api_workers"
-Cohesion: 0.15
-Nodes (7): owned(), close(), connect(), test_real_collector_restart_resumes_committed_quotes_on_same_api(), start(), test_real_processes_restart_independently_with_two_api_workers(), start()
-
 ### Community 150 - ".acceptance"
-Cohesion: 0.43
-Nodes (3): corrected(), history_delivered(), locally_committed()
+Cohesion: 0.26
+Nodes (6): Wire decisions for milestone 2, 6. Proposed ingestion protocol v1 (review candidate), corrected(), history_delivered(), locally_committed(), quotes_during_history()
 
 ### Community 151 - "src/marketdata/session_recovery.py"
 Cohesion: 0.15
 Nodes (4): recover_session(), RecoveryReceipt, RecoveryRequest, RecoveryStream
 
 ### Community 153 - "Standalone Market Data FastAPI"
-Cohesion: 0.09
-Nodes (20): External database and producer integration, Current ChartData and PostgreSQL 16.1 qualification — 2026-10-14, Distribution verification, Prior extraction results — 2026-10-14, Database compatibility, Disposable Docker setup, Go dashboard compatibility, Host install and independent image (+12 more)
+Cohesion: 0.12
+Nodes (16): Database compatibility, Disposable Docker setup, Go dashboard compatibility, Host install and independent image, Rebuild a clean handoff ZIP, Source ownership and future repository, Standalone Market Data FastAPI, Tests from this project only (+8 more)
 
 ### Community 155 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/candles.py"
 Cohesion: 0.21
@@ -852,32 +869,40 @@ Cohesion: 0.21
 Nodes (4): expected_minute(), MarketCandle, minute_start(), next_collection()
 
 ### Community 160 - "marketdata_socket"
-Cohesion: 0.13
-Nodes (5): create_stream_router(), changes(), marketdata_socket(), receiver(), render_event()
+Cohesion: 0.14
+Nodes (4): create_stream_router(), changes(), marketdata_socket(), render_event()
+
+### Community 162 - "time"
+Cohesion: 0.15
+Nodes (4): distribution(), run(), test_authentication_covers_rest_and_websocket(), test_complete_mock_rest_and_websocket_pipeline()
 
 ### Community 163 - "FastAPI Batch 2 — completion report"
 Cohesion: 0.13
 Nodes (15): 10. Exact test results, 11. Performance measurements, 12. Exact local commands, 13. Remaining frontend integration, 14. Authorization/deployment issues, 1. Existing functionality reused, 2. New routes implemented, 3. Backward compatibility (+7 more)
 
+### Community 165 - "benchmark_api_rest.py"
+Cohesion: 0.18
+Nodes (4): main(), plan_summary(), visit(), timing()
+
 ### Community 166 - "TSETMC M3B-2 company INGEST and storage"
-Cohesion: 0.12
-Nodes (14): Boundaries and remaining gates, Corrected invariants, Evidence and failed attempts, F02: prerequisite for every database-writing verification, Final executed results, M3B-2 audit remediation — 2026-10-20, Preservation and exact inventory, Acceptance coverage (+6 more)
+Cohesion: 0.08
+Nodes (23): Boundaries and defaults, Destination migration 0011, Explicit administration and role upgrades (future operator action), Modules and shared components, Reconciliation and legacy READ isolation, Release prerequisites, Boundaries and remaining gates, Corrected invariants (+15 more)
 
 ### Community 168 - "test_recovery_fanout.py"
 Cohesion: 0.15
 Nodes (3): NoLinearSearch, test_large_recovery_acknowledgements_keep_fanout_exact_without_linear_search(), write_candles()
 
-### Community 169 - "qualify_api.py"
-Cohesion: 0.13
-Nodes (4): load(), qualify(), summary(), worker()
+### Community 169 - "asyncio"
+Cohesion: 0.04
+Nodes (20): run(), bff_server(), smoke(), smoke(), load(), qualify(), summary(), worker() (+12 more)
 
 ### Community 170 - "Batch 4 employer qualification report — 2026-10-14"
 Cohesion: 0.14
 Nodes (14): 10. Failure/recovery — VERIFIED deterministic scope, 11–13. Deployment, rollback and frontend handoff — PARTIALLY VERIFIED, 14. Executed validation — VERIFIED, 15. Remaining blockers and audit decisions, 1. Exact supported endpoints — VERIFIED, 2. Authentication — VERIFIED locally / production integration PARTIALLY VERIFIED, 3. Historical data — VERIFIED, 4. Current prices — PARTIALLY VERIFIED (+6 more)
 
 ### Community 171 - "FastAPI v1.1 integration — Phase A audit and design"
-Cohesion: 0.17
-Nodes (11): 10. File-by-file implementation plan and milestones, 11. Acceptance and evidence plan, 12. Verification actually executed in Phase A, 2. Source-to-destination compatibility matrix, 3. Writer and ordering findings, 4. Independent quote qualification, 5. Recommended architecture, 6. Proposed ingestion protocol v1 (review candidate) (+3 more)
+Cohesion: 0.18
+Nodes (10): 10. File-by-file implementation plan and milestones, 11. Acceptance and evidence plan, 12. Verification actually executed in Phase A, 2. Source-to-destination compatibility matrix, 3. Writer and ordering findings, 4. Independent quote qualification, 5. Recommended architecture, 7. Atomic persistence and proposed additive migration (+2 more)
 
 ### Community 172 - "strict_json"
 Cohesion: 0.15
@@ -892,12 +917,16 @@ Cohesion: 0.30
 Nodes (4): classify_ranges(), Expectation, expectation(), session_windows()
 
 ### Community 179 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/sessions.py"
-Cohesion: 0.27
+Cohesion: 0.30
 Nodes (4): classify_ranges(), Expectation, expectation(), session_windows()
 
 ### Community 180 - "Experimental TradingView guest market data"
 Cohesion: 0.15
 Nodes (13): Collection and storage, Commercial access for this installation, Experimental TradingView guest market data, Inspect stored data, Native one-minute candle storage, Optional raw-history maintenance, Protocol evidence and maintenance, Real-time gate and tick semantics (+5 more)
+
+### Community 181 - "benchmark_candle_retrieval.py"
+Cohesion: 0.18
+Nodes (4): persistence(), probe(), run(), summaries()
 
 ### Community 183 - "marketdata-fastapi-v1.1.0rc1/src/marketdata/price_selection.py"
 Cohesion: 0.30
@@ -928,12 +957,16 @@ Cohesion: 0.41
 Nodes (11): startMarketData(), apply(), get(), open(), putCandle(), recover(), refreshCoverage(), refreshHistory() (+3 more)
 
 ### Community 191 - "test_native_candles.py"
-Cohesion: 0.05
-Nodes (18): test_fxcm_quote_namespace_normalization_keeps_identity_and_delay_gates(), test_two_broker_candles_and_volume_remain_independent_in_postgresql(), test_unclassified_source_volume_is_preserved_as_evidence_not_typed_or_additive(), test_all_captured_sessions_and_weekend(), test_compressed_sessions_cover_all_minutes_without_overlap(), live_harness(), test_guest_opt_in_keeps_worker_cap_and_default_guard(), test_recorded_commits_isolate_namespace_verify_decimals_and_replay() (+10 more)
+Cohesion: 0.06
+Nodes (16): test_fxcm_quote_namespace_normalization_keeps_identity_and_delay_gates(), test_two_broker_candles_and_volume_remain_independent_in_postgresql(), test_unclassified_source_volume_is_preserved_as_evidence_not_typed_or_additive(), test_all_captured_sessions_and_weekend(), test_compressed_sessions_cover_all_minutes_without_overlap(), test_recorded_commits_isolate_namespace_verify_decimals_and_replay(), captured(), Socket (+8 more)
 
 ### Community 192 - "startMarketData"
 Cohesion: 0.41
 Nodes (11): startMarketData(), apply(), get(), open(), putCandle(), recover(), refreshCoverage(), refreshHistory() (+3 more)
+
+### Community 193 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/providers/tradingview.py"
+Cohesion: 0.10
+Nodes (5): encode_message(), FrameDecoder, observed_decimal(), parse_quote(), TradingViewGuestProvider
 
 ### Community 194 - "src/marketdata/sessions.py"
 Cohesion: 0.30
@@ -952,8 +985,8 @@ Cohesion: 0.41
 Nodes (11): startMarketData(), apply(), get(), open(), putCandle(), recover(), refreshCoverage(), refreshHistory() (+3 more)
 
 ### Community 198 - "retrieve"
-Cohesion: 0.29
-Nodes (8): retrieve(), current_generation(), dispatch(), error_seen(), receive(), release(), remember(), send()
+Cohesion: 0.26
+Nodes (9): receiver(), retrieve(), current_generation(), dispatch(), error_seen(), receive(), release(), remember() (+1 more)
 
 ### Community 199 - "Production deployment and recovery"
 Cohesion: 0.33
@@ -964,8 +997,8 @@ Cohesion: 0.22
 Nodes (3): test_smoke_failure_checkpoint_excludes_credentials(), test_smoke_reconciles_committed_ws_candle_and_rejects_changed_prices(), test_smoke_rejects_simulated_source_identity_and_forming_bars()
 
 ### Community 201 - "test_actual_pytest_fixture_dependency_order"
-Cohesion: 0.18
-Nodes (3): test_actual_pytest_fixture_dependency_order(), verify(), register()
+Cohesion: 0.12
+Nodes (7): owned(), close(), connect(), test_actual_pytest_fixture_dependency_order(), register(), test_real_collector_restart_resumes_committed_quotes_on_same_api(), start()
 
 ### Community 204 - "smoke_production_tradingview.py"
 Cohesion: 0.15
@@ -995,33 +1028,45 @@ Nodes (8): Architecture, Change discipline, Core invariants, Documentation, Hand
 Cohesion: 0.29
 Nodes (5): database_url(), pair(), readonly_database_url(), registry(), store()
 
+### Community 218 - "verify_v11_release_pipeline.py"
+Cohesion: 0.25
+Nodes (5): linux_path(), main(), reconnect(), ReleasePipeline, task_guard()
+
 ### Community 220 - "test_api_v1_operations.py"
 Cohesion: 0.14
 Nodes (4): test_default_legacy_selection_prefers_fresh_quote_and_newer_stale_candle(), test_native_tick_volume_keeps_its_units_and_rollup_does_not_sum_it(), test_real_connection_failure_and_server_statement_timeout(), test_real_http_workers_read_stored_broker_candles_without_collector()
 
 ### Community 223 - "FastAPI v1.1 — milestone 1 destination foundation"
-Cohesion: 0.18
-Nodes (10): Actual migration, Changed files and rationale, Compatibility of existing callers, FastAPI v1.1 — milestone 1 destination foundation, Remaining risks and next scope, Reproduction on disposable infrastructure, Scope and decisions, Transaction and replay behavior (+2 more)
+Cohesion: 0.20
+Nodes (9): Actual migration, Changed files and rationale, Compatibility of existing callers, FastAPI v1.1 — milestone 1 destination foundation, Remaining risks and next scope, Reproduction on disposable infrastructure, Scope and decisions, Transaction and replay behavior (+1 more)
 
 ### Community 224 - "Platform reference"
 Cohesion: 0.20
 Nodes (10): APIs, Architecture and reliability, Configuration and live activation, Database, timestamps and candles, Identity and futures rollover, Ordinary expanded candle pilot, Platform reference, Provider coverage (+2 more)
 
-### Community 225 - "TSETMC M3B-2 company INGEST and storage"
+### Community 225 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/release_admin.py"
 Cohesion: 0.22
-Nodes (9): Boundaries and defaults, Destination migration 0011, Explicit administration and role upgrades (future operator action), Modules and shared components, Reconciliation and legacy READ isolation, Release prerequisites, Transactions, retries, ownership and recovery, TSETMC M3B-2 company INGEST and storage (+1 more)
+Nodes (4): boundary(), execute(), main(), provision()
 
 ### Community 228 - "test_candle_pool_benchmark.py"
-Cohesion: 0.21
-Nodes (7): main(), args(), harness(), test_live_pool_fails_before_network(), test_permanent_source_omissions_are_not_falsely_recovered(), test_pool_benchmark_reports_beyond100_and_cleanup(), test_transient_deadline_failures_recover_with_bounded_history()
+Cohesion: 0.27
+Nodes (6): args(), harness(), test_live_pool_fails_before_network(), test_permanent_source_omissions_are_not_falsely_recovered(), test_pool_benchmark_reports_beyond100_and_cleanup(), test_transient_deadline_failures_recover_with_bounded_history()
 
-### Community 234 - "test_ci_postgres.py"
-Cohesion: 0.38
-Nodes (4): test_ci_actual_pooled_connection_is_verified_without_reconnect(), test_ci_bootstrap_fences_first_mutation(), test_ci_live_mismatch_permits_only_metadata_select(), test_invalid_ci_proof_cannot_connect_or_write()
+### Community 234 - "verify_disposable"
+Cohesion: 0.17
+Nodes (9): evidence(), verify_disposable(), test_ci_actual_pooled_connection_is_verified_without_reconnect(), test_ci_bootstrap_fences_first_mutation(), test_ci_live_mismatch_permits_only_metadata_select(), test_invalid_ci_proof_cannot_connect_or_write(), verify(), test_invalid_disk_evidence_never_connects_or_mutates() (+1 more)
 
 ### Community 235 - "Company frontend handoff"
 Cohesion: 0.40
 Nodes (5): Authentication, Company frontend handoff, Requests and responses, Small standards-based example, WebSocket and reconnection
+
+### Community 237 - "prices_socket"
+Cohesion: 0.19
+Nodes (7): authorized(), create_app(), prices_socket(), commands(), send(), ticks_out(), create_combined_app()
+
+### Community 238 - "report_v11_qualification.py"
+Cohesion: 0.30
+Nodes (8): database_url(), percentiles(), task_database(), database_evidence(), main(), measurements(), records(), seconds()
 
 ### Community 240 - "WebSocket market data v1"
 Cohesion: 0.25
@@ -1032,8 +1077,8 @@ Cohesion: 0.25
 Nodes (7): Candle atomicity and commit ordering, Exact milestone 3B local consumer interface, Latest prices: partial inputs, durable full snapshots, Milestone 3A: local source capture and milestone 3B contract, Separate source migration and activation, Storage, failure and restore policy, Verified source audit and compatibility matrix
 
 ### Community 242 - "cursor"
-Cohesion: 0.07
-Nodes (23): Browser authentication (PROVISIONAL), Commands and subscription JSON, Delivery and cursor mechanics, Event JSON schemas, Initial snapshots and reconnect recovery, JavaScript use and isolated validation, Limits and slow consumers, WebSocket market data v1 (+15 more)
+Cohesion: 0.09
+Nodes (15): Audit and verification, Developer integration handoff — 2026-10-14, Local setup (PowerShell), REST requests, Semantics and outstanding dependencies, Subscribe and recover, changes(), router() (+7 more)
 
 ### Community 243 - "WebSocket market data v1"
 Cohesion: 0.25
@@ -1052,15 +1097,15 @@ Cohesion: 0.25
 Nodes (7): Actual passing, skipped and not-run results, Implementation and changed files, Milestone 3A review: durable local capture, Remaining risks and recommended milestone 3B, Reproduce the full suites, Transaction, ordering and delivery guarantees, Verification method and preservation
 
 ### Community 248 - "Milestone 2.1 — secure same-producer session recovery"
-Cohesion: 0.06
-Nodes (31): Actual passing and skipped verification, Database and recovery semantics, FastAPI v1.1 — milestone 2.1 review, Files and rationale, Preservation and remaining operational risks, Recommended milestone 3 design, Actual verification, FastAPI v1.1 — milestone 2 review (+23 more)
+Cohesion: 0.25
+Nodes (8): Clock and freshness expectations, Durable client state transitions for milestone 3, Errors and backoff, Exact request and response, Milestone 2.1 — secure same-producer session recovery, Reproduce on isolated databases, Transaction and fencing, Windows and Linux HTTP examples
 
 ### Community 249 - "Milestone 3A: local source capture and milestone 3B contract"
 Cohesion: 0.25
 Nodes (7): Candle atomicity and commit ordering, Exact milestone 3B local consumer interface, Latest prices: partial inputs, durable full snapshots, Milestone 3A: local source capture and milestone 3B contract, Separate source migration and activation, Storage, failure and restore policy, Verified source audit and compatibility matrix
 
 ### Community 250 - "Ordinary TradingView collector: 100-source qualification"
-Cohesion: 0.25
+Cohesion: 0.22
 Nodes (8): Actual earlier ordinary measurements, Completed accuracy-selected 100 result, Current 100 configuration and acceptance, Deployment identity and exact activation / rollback, Fixed identities and activation, Interruption / recovery and the scoped outage fix, Ordinary TradingView collector: 100-source qualification, Verification
 
 ### Community 251 - "Current state - 2026-10-17"
@@ -1072,16 +1117,24 @@ Cohesion: 0.25
 Nodes (7): Controlled release / site acceptance checklist, Credential rotation and failed release rollback, Destination backup and restore, Monitoring and proposed alerts, Operations, backup/restore, reconciliation and application rollback, Source backup, lost state and reconciliation, Startup, outage and terminal errors
 
 ### Community 253 - "run"
-Cohesion: 0.25
-Nodes (4): database_url(), expected_stop(), run(), TaskDocker
+Cohesion: 0.30
+Nodes (3): expected_stop(), run(), TaskDocker
+
+### Community 254 - "test_live_capacity_harness.py"
+Cohesion: 0.20
+Nodes (5): harness(), test_cycle_uses_one_history_request_per_symbol_and_owns_cleanup(), connect(), test_native_persistence_guard_precedes_any_source_or_database_access(), test_resume_rejects_access_errors_request_failures_and_stale_windows()
+
+### Community 255 - "tests/conftest.py"
+Cohesion: 0.29
+Nodes (5): database_url(), pair(), readonly_database_url(), registry(), store()
 
 ### Community 256 - "test_tsetmc_http.py"
-Cohesion: 0.07
-Nodes (16): instrument_id(), sync(), worker_tls_server(), ingress_tsetmc(), test_actual_child_process_death_and_replay(), test_actual_tls_upload_and_untrusted_certificate_rejected(), test_authenticated_upload_receipt_lookup_and_safe_errors(), test_binding_changes_serialize_with_restricted_ingest() (+8 more)
+Cohesion: 0.08
+Nodes (11): worker_tls_server(), ingress_tsetmc(), test_actual_child_process_death_and_replay(), test_actual_tls_upload_and_untrusted_certificate_rejected(), test_authenticated_upload_receipt_lookup_and_safe_errors(), test_binding_changes_serialize_with_restricted_ingest(), test_invalid_scalar_http_requests_are_422_with_no_import_writes(), test_multi_epoch_shared_session_recovery_and_legacy_worker_models_stay_closed() (+3 more)
 
 ### Community 258 - "re"
-Cohesion: 0.03
-Nodes (32): boundary(), execute(), main(), provision(), main(), boundary(), execute(), main() (+24 more)
+Cohesion: 0.04
+Nodes (20): boundary(), execute(), main(), provision(), context(), docker(), evidence(), main() (+12 more)
 
 ### Community 260 - "api-batch3-verification.md"
 Cohesion: 0.29
@@ -1095,9 +1148,17 @@ Nodes (6): Changed files and rationale, FastAPI v1.1 — Milestone 3B review, Fi
 Cohesion: 0.29
 Nodes (7): Activation and history, Configuration and ordinary execution, Git boundary, Live result — 2026-10-12, Measurement definitions, Ordinary collector instrument activation, Safe activation and rollback
 
+### Community 265 - "marketdata-fastapi/README.md"
+Cohesion: 0.28
+Nodes (4): External database and producer integration, Current ChartData and PostgreSQL 16.1 qualification — 2026-10-14, Distribution verification, Prior extraction results — 2026-10-14
+
 ### Community 268 - "16. Database model"
 Cohesion: 0.33
 Nodes (6): 16. Database model, `instruments`, `latest_prices`, `market_ticks`, OHLCV / candles, `provider_instruments`
+
+### Community 269 - "pathlib"
+Cohesion: 0.04
+Nodes (10): test_complete_file_manifest(), test_source_track_and_worker_are_present(), test_complete_file_manifest(), test_no_collector_or_concrete_provider_shipped(), test_complete_file_manifest(), test_source_track_and_worker_are_present(), test_complete_file_manifest(), test_no_collector_or_concrete_provider_shipped() (+2 more)
 
 ### Community 274 - "Multi-asset market data"
 Cohesion: 0.33
@@ -1106,6 +1167,10 @@ Nodes (6): Current capabilities and limits, Development and validation, Document
 ### Community 275 - "tracing_store"
 Cohesion: 0.33
 Nodes (3): tracing_store(), write_candles(), write_quotes()
+
+### Community 276 - "WebSocket market data v1"
+Cohesion: 0.25
+Nodes (8): Browser authentication (PROVISIONAL), Commands and subscription JSON, Delivery and cursor mechanics, Event JSON schemas, Initial snapshots and reconnect recovery, JavaScript use and isolated validation, Limits and slow consumers, WebSocket market data v1
 
 ### Community 278 - "Repository layout and existing checkout migration"
 Cohesion: 0.33
@@ -1120,20 +1185,32 @@ Cohesion: 0.33
 Nodes (3): Linux collector and worker installation, Windows collector and worker installation, TradingView collector / durable synchronization — v1.1.0rc1 candidate
 
 ### Community 281 - "FastAPI Batch 1: independent processes"
-Cohesion: 0.25
-Nodes (8): Disposable validation and preservation, FastAPI Batch 1: independent processes, Health, REST and WebSocket contracts, Independent startup and shutdown, Previous and new architecture, Rollback and next batches, Operational health and freshness, disconnected()
+Cohesion: 0.40
+Nodes (5): Disposable validation and preservation, FastAPI Batch 1: independent processes, Health, REST and WebSocket contracts, Independent startup and shutdown, Rollback and next batches
 
 ### Community 283 - "30. Testing"
 Cohesion: 0.40
 Nodes (5): 30. Testing, Persistence integration tests, Provider behaviour tests, Regression tests, Unit tests
 
+### Community 285 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/production.py"
+Cohesion: 0.38
+Nodes (3): command(), DeploymentSettings, main()
+
 ### Community 286 - "Authorized commercial TradingView preparation"
 Cohesion: 0.40
 Nodes (5): Authorized commercial TradingView preparation, End-to-end test, Preparation verification — 2026-10-14, Prepared configuration, Target preparation and switch
 
+### Community 287 - "datetime"
+Cohesion: 0.29
+Nodes (3): forbidden(), snapshot(), test_0006_roundtrip_preserves_market_and_health_rows_with_new_epoch()
+
+### Community 288 - "Company ingestion protocol v1 (FastAPI v1.1, milestone 2)"
+Cohesion: 0.29
+Nodes (7): Batch envelope and canonical values, Company ingestion protocol v1 (FastAPI v1.1, milestone 2), Limits and errors, Receipts and retry policy, Routes, Session and ownership fencing, Transport and authentication
+
 ### Community 290 - "collector"
-Cohesion: 0.12
-Nodes (10): Collector and FastAPI integration handoff, Integration points and conflicts, Legacy collector and controlled deployment, Next steps in the third worktree, 1. Verified version and deployment boundaries, 9. Database privileges and deployment design, collector(), providers() (+2 more)
+Cohesion: 0.18
+Nodes (9): Collector and FastAPI integration handoff, Integration points and conflicts, Legacy collector and controlled deployment, Next steps in the third worktree, 1. Verified version and deployment boundaries, 9. Database privileges and deployment design, collector(), providers() (+1 more)
 
 ### Community 291 - "Native availability investigation — 2026-10-12"
 Cohesion: 0.40
@@ -1151,17 +1228,25 @@ Nodes (4): 13. Timestamp handling, Event timestamp, Persistence timestamp, Recei
 Cohesion: 0.50
 Nodes (4): FastAPI v1.1 release preparation, Implemented execution protocol, Live guest pool experiment, Ordinary collector scaling
 
-### Community 297 - "Live guest candles through PostgreSQL"
+### Community 296 - "FastAPI v1.1 — milestone 2.1 review"
+Cohesion: 0.33
+Nodes (6): Actual passing and skipped verification, Database and recovery semantics, FastAPI v1.1 — milestone 2.1 review, Files and rationale, Preservation and remaining operational risks, Recommended milestone 3 design
+
+### Community 329 - "events"
 Cohesion: 0.40
-Nodes (5): Completed paced run, Evidence and interpretation, Initial unpaced result, Live guest candles through PostgreSQL, Reproduction
+Nodes (3): test_no_precommit_delivery_and_rollback_cannot_publish(), events(), test_no_precommit_delivery_and_rollback_cannot_publish()
+
+### Community 331 - "FastAPI v1.1 — milestone 2 review"
+Cohesion: 0.40
+Nodes (5): Actual verification, FastAPI v1.1 — milestone 2 review, Files and rationale, Migration and transaction design, Preservation and remaining risks
 
 ### Community 353 - "Company frontend handoff"
 Cohesion: 0.40
 Nodes (5): Authentication, Company frontend handoff, Requests and responses, Small standards-based example, WebSocket and reconnection
 
 ### Community 354 - "M3B-2 disposable CI ownership"
-Cohesion: 0.25
-Nodes (7): Additional financial review: retained revision adjacency, Crash-test harness timing, Final application-code results, M3B-2 disposable CI ownership, Matrix and verification, Two explicit profiles, Windows checkout bytes
+Cohesion: 0.29
+Nodes (6): Additional financial review: retained revision adjacency, Final application-code results, M3B-2 disposable CI ownership, Matrix and verification, Two explicit profiles, Windows checkout bytes
 
 ### Community 355 - "Shared dashboard integration on audited company storage"
 Cohesion: 0.40
@@ -1171,8 +1256,12 @@ Nodes (4): Frontend, Qualification limits, Setup, Shared dashboard integration o
 Cohesion: 0.29
 Nodes (7): Audit and implementation, Deterministic verification, Employer goal verdicts, Registries and genuine source evidence, Safe final qualification and rollout, Semantics and v1.0 compatibility, Simultaneous TradingView collection — 2026-10-14
 
+### Community 357 - "Company ingestion runtime — milestones 2, 2.1 and 3B"
+Cohesion: 0.40
+Nodes (5): Company ingestion runtime — milestones 2, 2.1 and 3B, Database and private identities, Provision a producer and source ownership, Reproduce only on disposable infrastructure, Start separate read and ingestion processes
+
 ### Community 358 - "Candle hardening verification - 2026-10-07"
-Cohesion: 0.50
+Cohesion: 0.40
 Nodes (4): Candle hardening verification - 2026-10-07, Historical truth observed live, Latency diagnosis and measurement, Reliability verdicts
 
 ### Community 362 - "Completed-development consolidation into main"
@@ -1181,22 +1270,22 @@ Nodes (5): Completed-development consolidation into main, Completeness and exclu
 
 ## Knowledge Gaps
 - **4 isolated node(s):** `marketdata-collector-sync`, `marketdata-fastapi`, `marketdata-fastapi`, `marketdata-platform`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3053 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **132 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3059 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **134 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `collector()` connect `collector` to `Simultaneous TradingView collection — 2026-10-14`, `datetime`, `record`, `WebSocket market data v1`, `cursor`, `WebSocket market data v1`, `Experimental TradingView guest market data`, `WebSocket market data v1`, `Multi-asset market data`, `Verified collector / FastAPI Batch 1 integration`, `tracing_store`, `FastAPI Batch 1: independent processes`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+- **Why does `collector()` connect `collector` to `v11_qualification_process.py`, `Simultaneous TradingView collection — 2026-10-14`, `asyncio`, `InjectedQuotes`, `record`, `WebSocket market data v1`, `Multi-asset market data`, `WebSocket market data v1`, `WebSocket market data v1`, `WebSocket market data v1`, `Experimental TradingView guest market data`, `Verified collector / FastAPI Batch 1 integration`, `tracing_store`, `FastAPI Batch 1: independent processes`?**
+  _High betweenness centrality (0.063) - this node is a cross-community bridge._
 - **What connects `marketdata-collector-sync`, `marketdata-fastapi`, `marketdata-fastapi` to the rest of the system?**
   _4 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `time` be split into smaller, more focused modules?**
-  _Cohesion score 0.03108715184186882 - nodes in this community are weakly interconnected._
+- **Should `benchmark_live_pool.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.08374384236453201 - nodes in this community are weakly interconnected._
 - **Why does `Quick start` connect `Multi-asset market data` to `collector`?**
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Should `pathlib` be split into smaller, more focused modules?**
-  _Cohesion score 0.027777777777777776 - nodes in this community are weakly interconnected._
+- **Should `json` be split into smaller, more focused modules?**
+  _Cohesion score 0.04658197217180883 - nodes in this community are weakly interconnected._
 - **Why does `Multi-asset market data` connect `Multi-asset market data` to `README.md`?**
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Should `src/marketdata/api.py` be split into smaller, more focused modules?**

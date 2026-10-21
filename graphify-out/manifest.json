@@ -3438,9 +3438,9 @@
     "semantic_hash": ""
   },
   "examples/unified-dashboard.mjs": {
-    "mtime": 1792566594.4712796,
-    "seen": 1792566708.4569478,
-    "ast_hash": "c114db8aa10393062645d226c1858b45",
+    "mtime": 1792581535.2437372,
+    "seen": 1792582087.371066,
+    "ast_hash": "42e2e94930ea4a970c682064c2939c1d",
     "semantic_hash": ""
   },
   "src/marketdata/tsetmc/__init__.py": {
@@ -3450,9 +3450,9 @@
     "semantic_hash": ""
   },
   "src/marketdata/tsetmc/api.py": {
-    "mtime": 1792566602.3883677,
-    "seen": 1792566708.4734263,
-    "ast_hash": "1bc12df0208d64c15739ce33d12fe9be",
+    "mtime": 1792581612.7461922,
+    "seen": 1792582087.4028747,
+    "ast_hash": "edf65b8a484abfe6e8050256eba791f6",
     "semantic_hash": ""
   },
   "src/marketdata/tsetmc/cursors.py": {
@@ -3468,9 +3468,9 @@
     "semantic_hash": ""
   },
   "tests/unified-dashboard.test.mjs": {
-    "mtime": 1792566278.1789713,
-    "seen": 1792566507.0235972,
-    "ast_hash": "e13ccd2b2303580eb9d8ce032c0573b3",
+    "mtime": 1792581535.244709,
+    "seen": 1792582087.423326,
+    "ast_hash": "06a69dbc88122cb0fcbff59c307c9841",
     "semantic_hash": ""
   },
   "scripts/prepare_tsetmc_connection.py": {
@@ -3498,9 +3498,15 @@
     "semantic_hash": ""
   },
   "docs/unified-dashboard-flow.md": {
-    "mtime": 1792566683.9978034,
-    "seen": 1792566708.4984872,
-    "ast_hash": "2f6d257fc85d8191f9d7993589007bf2",
+    "mtime": 1792581961.5510163,
+    "seen": 1792582087.4356143,
+    "ast_hash": "2e061e246b9add5ac927b8a5d1337460",
+    "semantic_hash": ""
+  },
+  "tests/test_tsetmc_read_limits.py": {
+    "mtime": 1792581479.2400765,
+    "seen": 1792582087.4223893,
+    "ast_hash": "6786dc3d3ad1188013fe8c5c6c56aed2",
     "semantic_hash": ""
   }
 }

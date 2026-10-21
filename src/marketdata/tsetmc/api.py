@@ -5,7 +5,15 @@ import json
 from datetime import UTC, date, datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.routing import APIRoute
 
 from marketdata.config import Settings
@@ -93,10 +101,15 @@ def router(settings: Settings) -> APIRouter:
     result = APIRouter(tags=["Iranian equity tsetmc.v1"])
     clients = 0
 
+    def page_capacity(limit: Limit = 100) -> int:
+        if limit > settings.api_max_rows:
+            raise HTTPException(422, "page capacity exceeded")
+        return limit
+
+    PageLimit = Annotated[int, Depends(page_capacity)]
+
     @result.get("/api/v1/tsetmc/instruments")
-    async def instruments(
-        request: Request, after: Code = "0", limit: Limit = 100
-    ) -> dict[str, Any]:
+    async def instruments(request: Request, limit: PageLimit, after: Code = "0") -> dict[str, Any]:
         async with request.app.state.store.connection() as c:
             rows = await c.fetch(
                 "SELECT l.ins_code,i.display_name,i.exchange,l.enabled FROM "
@@ -134,9 +147,9 @@ def router(settings: Settings) -> APIRouter:
         ins_code: Code,
         start: date,
         end: date,
+        limit: PageLimit,
         selection: Selection = "finalized",
         after: date | None = None,
-        limit: Limit = 100,
     ) -> dict[str, Any]:
         """Inclusive start, exclusive end. Midnight date labels are not trading instants."""
         if end <= start or (end - start).days > 36600:
@@ -174,7 +187,7 @@ def router(settings: Settings) -> APIRouter:
 
     @result.get("/api/v1/tsetmc/coverage")
     async def coverage(
-        request: Request, ins_code: Code, after: str = "", limit: Limit = 100
+        request: Request, ins_code: Code, limit: PageLimit, after: str = ""
     ) -> dict[str, Any]:
         if len(after) > 10:
             raise HTTPException(422, "invalid coverage cursor")
@@ -202,7 +215,7 @@ def router(settings: Settings) -> APIRouter:
         request: Request,
         ins_code: Code,
         after: Annotated[str, Query(max_length=200)],
-        limit: Limit = 100,
+        limit: PageLimit,
     ) -> dict[str, Any]:
         try:
             return await changes(request.app.state.store, after, ins_code, limit)

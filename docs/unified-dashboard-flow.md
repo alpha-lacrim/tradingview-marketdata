@@ -82,6 +82,17 @@ availability is false. Stored data remains readable while collectors are offline
 WebSockets send a snapshot then journal changes. Keep the last processed cursor;
 an invalid epoch or cursor below the retained floor requires a fresh snapshot.
 For daily pagination retain the first snapshot_cursor and replay subsequent changes.
+All paginated Iranian reads enforce API_MAX_ROWS before querying PostgreSQL.
+
+International WebSockets require a subscription command. On open, send the JSON
+returned by client.streamSubscription(source); Iranian sockets return null because
+their subscription is in the URL. International reconnect replay uses
+client.changes(source, lastCursor, {until: snapshotCursor}) and its has_more/cursor
+pagination, following the snapshot/replay procedure in docs/frontend-integration.md.
+The international journal includes other sources: filter by the complete source
+identity and advance the cursor only after processing the page. streamURL rejects
+an international after cursor instead of silently discarding it. Latest/history
+requests retain the selected provider_symbol as well as provider and canonical symbol.
 
 ## Qualification limits
 
