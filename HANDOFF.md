@@ -1,3 +1,30 @@
+# Active reconciliation — 2026-10-21
+
+User explicitly approved merging the unified integration to main; no production is active.
+TSETMC source commit af5e180 is already pushed to its main branch. Company main is
+6c8253d3 with audited M3B-2 schema0011. Earlier unified branch c71c3f07 has an
+incompatible alternate0011 and must NOT be merged as-is. Original working checkout
+and its user edits remain untouched. This managed worktree, branch
+codex/reconcile-unified-main, is the integration workspace.
+
+In-progress changes adapt the earlier dashboard reads to audited daily_records,
+current_latest, source_status, daily_coverage and event_clock/events. Retention floor
+now rejects stale cursors. Optional batch/receipt URL aliases reuse audited ingestion
+for the already-published source worker; both flags must be enabled. No old writer,
+old wire validator, alternate migration or role SQL was imported.
+
+Still required before merging: finish discovery compatibility (existing domain enums
+exclude equity), adapt atomic administrative setup and connection generator to audited
+InstrumentBinding/provision (explicit approval evidence/source identity/units), port
+setup/HTTPS/READ tests using existing strict disposable DB guards, run actual PG suite,
+fix OpenAPI expectations if necessary, update deployment guide and source handoff links,
+update graph, commit and push main only after checks pass. Default test run is active
+in artifacts-reconcile-tests.log; it skips PG because no approved fixture proof exists
+in this new worktree. Do not bypass the existing fixture ownership checks. Source
+portable binaries and prior task cluster are available but stopped. No services deployed.
+
+---
+
 # Current state - 2026-10-20, M3B-2 integration checkpoint
 
 Reviewed application head `77381423b596bd3fe0fc7e9ae1710139b32754f6`, PR #3:

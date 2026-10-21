@@ -188,6 +188,7 @@ async def ingress_tsetmc(tsetmc, tmp_path):  # noqa: F811
         database_url=dsn("marketdata_v11_ingest"),
         ingest_credentials_file=credentials,
         tsetmc_ingest_enabled=True,
+        company_tsetmc_enabled=True,
     )
     app = create_app(config)
     try:

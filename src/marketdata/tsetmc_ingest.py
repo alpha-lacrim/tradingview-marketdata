@@ -18,7 +18,7 @@ def register(app: FastAPI, settings: Settings, writer: TsetmcWriter) -> None:
     # Import after ingest_api's definitions exist; body/guard remain the shared boundary.
     from marketdata.ingest_api import body
 
-    def endpoint(stream: str) -> Callable[[Request], Awaitable[dict[str, Any]]]:
+    def endpoint(stream: str | None) -> Callable[[Request], Awaitable[dict[str, Any]]]:
         async def upload(request: Request) -> dict[str, Any]:
             if not settings.tsetmc_ingest_enabled:
                 raise TsetmcError("source_not_authorized", 403)
@@ -30,7 +30,7 @@ def register(app: FastAPI, settings: Settings, writer: TsetmcWriter) -> None:
                 raise TsetmcError("payload_hash_mismatch", 400)
             batch = decode(payload)
             validate(batch, "Batch")
-            if batch["stream"] != stream:
+            if stream is not None and batch["stream"] != stream:
                 raise TsetmcError("stream_mismatch")
             if len(batch["records"]) > settings.ingest_max_records:
                 raise TsetmcError("record_limit_exceeded", 413)
@@ -42,6 +42,9 @@ def register(app: FastAPI, settings: Settings, writer: TsetmcWriter) -> None:
         app.add_api_route(
             "/api/ingest/v1/tsetmc/" + name, endpoint("tsetmc_" + name), methods=["POST"]
         )
+
+    if settings.company_tsetmc_enabled:
+        app.add_api_route("/api/ingest/v1/tsetmc/batches", endpoint(None), methods=["POST"])
 
     @app.post("/api/ingest/v1/tsetmc/reconcile")
     async def comparison(request: Request) -> dict[str, Any]:

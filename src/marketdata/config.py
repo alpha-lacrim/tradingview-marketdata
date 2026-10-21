@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
     application_role: Literal["api", "ingest", "collector", "combined"] = "api"
+    company_tsetmc_enabled: bool = False
     tsetmc_ingest_enabled: bool = False
     tsetmc_event_retention_count: int = Field(default=100000, ge=1, le=1000000)
     ingest_credentials_file: Path | None = None

@@ -773,6 +773,10 @@ def _create_app(settings: Settings, *, combined: bool) -> FastAPI:
         if isinstance(route, APIRoute) and route.path != "/health":
             route.openapi_extra = {"security": [{"CompanyBearer": []}]}
     app.include_router(create_router(settings))
+    if settings.company_tsetmc_enabled:
+        from marketdata.tsetmc.api import router as tsetmc_router
+
+        app.include_router(tsetmc_router(settings))
     stream_router = create_stream_router(settings)
     for stream_route in stream_router.routes:
         if isinstance(stream_route, APIRoute):

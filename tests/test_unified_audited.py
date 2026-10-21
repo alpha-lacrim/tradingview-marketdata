@@ -1,0 +1,74 @@
+"""Shared dashboard routes over audited storage, using real restricted SQL roles."""
+
+import json
+
+import httpx
+from test_market_stream import HEADERS, ORIGIN, server, ws_url
+from test_tsetmc_http import ingress_tsetmc, upload  # noqa: F401
+from tsetmc_helpers import A, tsetmc  # noqa: F401
+from websockets.asyncio.client import connect
+
+from marketdata.config import Settings
+from marketdata.persistence import Store
+
+
+async def test_worker_alias_reads_replay_and_retention_floor(ingress_tsetmc):  # noqa: F811
+    i = ingress_tsetmc
+    batch = i.t.batch()
+    receipt = await upload(i, batch, name="batches")
+    assert receipt.status_code == 200, receipt.text
+    saved = await i.client.get("/api/ingest/v1/tsetmc/receipts/" + batch["batch_id"])
+    assert saved.json() == receipt.json()
+    assert (await upload(i, batch, name="batches")).json() == receipt.json()
+    assert (await upload(i, i.t.batch("current"), name="batches")).status_code == 200
+    async with server(
+        Store(Settings(_env_file=None, database_url=i.dsn("marketdata_v11_read"))),
+        company_tsetmc_enabled=True,
+        api_environment="production",
+    ) as (_, base):
+        async with httpx.AsyncClient(base_url=base, headers=HEADERS) as client:
+            instruments = await client.get("/api/v1/tsetmc/instruments")
+            assert instruments.status_code == 200, instruments.text
+            assert instruments.json()["items"][0]["provider"] == "tsetmc"
+            params = dict(ins_code=A, start="2026-01-01", end="2027-01-01")
+            history = await client.get(
+                "/api/v1/tsetmc/daily",
+                params={
+                    **params,
+                    "selection": "accepted-unverified",
+                },
+            )
+            assert history.status_code == 200, history.text
+            assert (
+                history.json()["items"][0]["measurements"]
+                == batch["records"][0]["observation"]["measurements"]
+            )
+            latest = await client.get("/api/v1/tsetmc/latest", params={"ins_code": A})
+            assert latest.status_code == 200, latest.text
+            assert latest.json()["current"]["realtime_quote_available"] is False
+        async with connect(
+            ws_url(base).replace("/ws/marketdata", "/ws/tsetmc") + "?ins_code=" + A,
+            additional_headers=HEADERS,
+            origin=ORIGIN,
+        ) as ws:
+            initial = json.loads(await ws.recv())
+            assert initial["type"] == "snapshot"
+            assert (await upload(i, i.t.batch("status"), name="batches")).status_code == 200
+            for _ in range(100):
+                change = json.loads(await ws.recv())
+                if change.get("items"):
+                    assert change["items"][0]["type"] == "status.updated"
+                    break
+            else:
+                raise AssertionError("missing committed status event")
+        async with i.t.store.connection() as c:
+            await c.execute("UPDATE company_tsetmc.event_clock SET floor=head")
+        async with httpx.AsyncClient(base_url=base, headers=HEADERS) as client:
+            expired = await client.get(
+                "/api/v1/tsetmc/changes",
+                params={
+                    "ins_code": A,
+                    "after": initial["cursor"],
+                },
+            )
+            assert expired.status_code == 409

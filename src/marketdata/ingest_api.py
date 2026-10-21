@@ -386,6 +386,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise Rejection(422, "invalid_reconciliation") from None
         return await reconcile(writer, request.state.principal, parsed)
 
+    if settings.company_tsetmc_enabled:
+        app.add_api_route("/api/ingest/v1/tsetmc/receipts/{batch_id}", receipt, methods=["GET"])
+
     # Request parsing remains bounded/strict above; advertise its typed wire schema too.
     original_openapi = app.openapi
 
