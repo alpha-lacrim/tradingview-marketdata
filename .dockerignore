@@ -1,4 +1,9 @@
 .venv
+.local
+.codex
+graphify-out
+dist
+LOCAL_WORKSPACE.md
 .git
 .env
 .env.local

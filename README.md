@@ -1,4 +1,9 @@
-> Unreleased company-side TSETMC M3B-2: [design and operations](docs/tsetmc-m3b2.md),
+> Current unified dashboard: [collector/company connection guide](docs/unified-dashboard-flow.md),
+> [current state and verified checks](HANDOFF.md), [workspace and checkpoints](docs/workspace.md).
+> Use `main` for both repositories. Company destination is **0011**; TradingView source
+> remains **0006 + sc0002**; independent TSETMC source is **0005_delivery**.
+
+> Company-side TSETMC M3B-2: [design and operations](docs/tsetmc-m3b2.md),
 > [local verification](docs/tsetmc-m3b2-verification.md). Development destination head is **0011**;
 > TSETMC is disabled by default. Frozen rc1 below remains **0010**. No rollout or new release.
 

@@ -16,6 +16,11 @@ build/
 htmlcov/
 .idea/
 .vscode/
+.codex/
+.local/
+LOCAL_WORKSPACE.md
+# Keep graph outputs; the AST cache is regenerated locally.
+/graphify-out/cache/
 artifacts/
 research/
 logs/

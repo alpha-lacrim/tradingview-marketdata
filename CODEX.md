@@ -101,7 +101,8 @@ The platform should:
 Documented provider adapters are the supported integrations. The operator has explicitly
 authorized an experimental TradingView guest quote adapter; its observed protocol and
 limitations belong in `docs/tradingview.md`. It must not bypass access controls or infer
-real-time status from a changing number alone. No domestic provider is currently selected.
+real-time status from a changing number alone. Independent Iranian collection and optional
+company delivery are described in `docs/unified-dashboard-flow.md`.
 
 ---
 
