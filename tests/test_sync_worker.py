@@ -1121,7 +1121,7 @@ async def test_0009_to_0010_additive_preserves_committed_candles(destination, pa
         assert await d.writer.receipt(d.producer, UUID(receipt["batch_id"])) == receipt
         async with d.store.connection() as c:
             assert await c.fetch("SELECT * FROM market_candles") == before
-            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
     finally:
         await migrate(url, "upgrade", "head")
 

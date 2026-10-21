@@ -1,0 +1,42 @@
+# Source-checkout company runtime. Provision/migrate the separate database explicitly first.
+# Put both roles behind the SAME company HTTPS gateway. No collector is started here.
+services:
+  read:
+    build: {context: ., dockerfile: Dockerfile.api, target: runtime}
+    command: [.venv/bin/python, -m, marketdata.production, api]
+    environment:
+      COMPANY_TSETMC_ENABLED: "true"
+      DATABASE_URL_FILE: /run/secrets/read_dsn
+      API_KEY_FILE: /run/secrets/api_key
+      API_CORS_ORIGINS: ${FRONTEND_ORIGINS:?HTTPS frontend origins JSON required}
+      WEBSOCKET_ALLOWED_ORIGINS: ${FRONTEND_ORIGINS}
+      FORWARDED_ALLOW_IPS: ${GATEWAY_IP:?Explicit trusted gateway IP required}
+    secrets: [read_dsn, api_key]
+    networks: [company]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  ingest:
+    build: {context: ., dockerfile: Dockerfile.api, target: runtime}
+    command: [.venv/bin/python, -m, marketdata.production, ingest]
+    environment:
+      COMPANY_TSETMC_ENABLED: "true"
+      DATABASE_URL_FILE: /run/secrets/ingest_dsn
+      INGEST_CREDENTIALS_FILE: /run/secrets/ingest_credentials
+      FORWARDED_ALLOW_IPS: ${GATEWAY_IP}
+    secrets: [ingest_dsn, ingest_credentials]
+    networks: [company]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+networks:
+  company:
+    external: true
+    name: ${COMPANY_NETWORK:?Existing gateway/database network required}
+secrets:
+  read_dsn: {file: "${SECRETS_DIR:?Private secrets directory required}/read_dsn"}
+  ingest_dsn: {file: "${SECRETS_DIR}/ingest_dsn"}
+  api_key: {file: "${SECRETS_DIR}/api_key"}
+  ingest_credentials: {file: "${SECRETS_DIR}/ingest_credentials.json"}

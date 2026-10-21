@@ -89,7 +89,7 @@ async def test_fresh_database_installs_current_head_and_optional_timescale(store
         await migrate(url, *args, "upgrade", "head")
         c = await asyncpg.connect(url)
         try:
-            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
             assert await c.fetchval("SELECT count(*) FROM marketdata_events") == 0
             assert await c.fetchval("SELECT count(*) FROM ingest_batches") == 0
             assert (

@@ -1,3 +1,29 @@
+# Unified dashboard integration — 2026-10-21
+
+The current user request authorizes cross-repository integration, verification and
+Git handling. This source checkout now supports the independent TSETMC collector
+alongside TradingView through one company READ application and HTTPS INGEST role.
+Read [the complete connection guide](docs/unified-dashboard-flow.md) and
+[verification and remaining limits](docs/unified-dashboard-verification.md).
+
+Company migration 0011 adds exact Iranian projections and a durable event journal.
+The matching tsetmc-marketdata branch adds 0005_delivery, archive enrollment and a
+fenced HTTPS worker. Both task branches are named codex/unified-dashboard-flow.
+The original pilot, original TradingView runtime and frozen distribution payloads
+were not changed. No production deployment or live collection was activated.
+
+Qualification uses separate synthetic PostgreSQL 16.1 databases, verified local
+TLS, restricted company roles, REST/WebSocket reads, restart/correction recovery
+and external source continuity evidence. Exact final results are in the verification
+file. Actual 99-feed selection/coverage, company authentication/deployment and
+unattended retention/restore qualification remain outstanding.
+
+Pre-existing local AGENTS.md, README.md, handoff additions, company guide documents,
+conversation artifacts and repo/ were preserved separately. Generated graph files
+remain local because they index those unrelated workspace artifacts.
+
+---
+
 # Current state - 2026-10-17
 
 ## FastAPI v1.1 - Milestone 5 complete, publication authorized

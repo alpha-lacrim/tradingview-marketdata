@@ -31,10 +31,10 @@ async def boundary(c: Any, component: str, *, complete: bool = False) -> dict[st
         await c.fetchval("SELECT version_num FROM source_capture_version") if capture else None
     )
     if component == "company":
-        if capture or base not in {None, *(f"{n:04}" for n in range(1, 11))}:
+        if capture or base not in {None, *(f"{n:04}" for n in range(1, 12))}:
             raise ValueError("company database must not contain source capture")
-        if complete and base != "0010":
-            raise ValueError("company requires destination 0010")
+        if complete and base not in {"0010", "0011"}:
+            raise ValueError("company requires destination 0010 or 0011")
     elif component == "collector":
         if destination or base not in {None, *(f"{n:04}" for n in range(1, 7))}:
             raise ValueError("collector database must not contain destination schema")

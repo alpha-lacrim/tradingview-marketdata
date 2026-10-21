@@ -147,9 +147,11 @@ def test_read_openapi_contract_unchanged_from_frozen_v10():
     expected = json.loads(Path("distributions/marketdata-fastapi/docs/openapi.json").read_text())
     from marketdata import __version__
 
-    # Release metadata advances; every path/schema/auth contract stays identical.
+    # Equity classification is additive; existing paths and financial DTOs stay intact.
     assert expected["info"]["version"] == "1.0.0"
     expected["info"]["version"] = __version__
+    expected["components"]["schemas"]["AssetClass"]["enum"].insert(0, "equity")
+    expected["components"]["schemas"]["InstrumentType"]["enum"].insert(0, "common_stock")
     assert create_app(Settings(_env_file=None)).openapi() == expected
 
 

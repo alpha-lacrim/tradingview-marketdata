@@ -28,6 +28,7 @@ logs/
 !scripts/sql/v11_destination_roles.sql
 !scripts/sql/v11_source_sync_role.sql
 !scripts/sql/v11_source_collector_role.sql
+!scripts/sql/tsetmc_destination_roles.sql
 dumps/
 backups/
 volumes/

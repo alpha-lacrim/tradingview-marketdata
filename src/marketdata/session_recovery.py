@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from marketdata.ingest_auth import Principal
 from marketdata.persistence import Store
 from marketdata.replication import ReplicationError
-from marketdata.replication_models import MAX_POSITION, Stream
+from marketdata.replication_models import MAX_POSITION
 
 MAX_RECOVERY_BYTES = 262144
 
@@ -19,7 +19,16 @@ class RecoveryStream(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     instrument_id: UUID
     provider: str = Field(pattern=r"^[a-z][a-z0-9_]{0,99}$")
-    stream: Stream
+    stream: Literal[
+        "candles",
+        "quotes",
+        "coverage",
+        "status",
+        "tsetmc_daily",
+        "tsetmc_current",
+        "tsetmc_coverage",
+        "tsetmc_status",
+    ]
     source_epoch: UUID
     ownership_generation: int = Field(strict=True, gt=0, le=MAX_POSITION)
 

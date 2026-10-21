@@ -155,7 +155,7 @@ async def test_mock_multi_instrument_stream_and_disconnect(registry):
     stream = provider.stream_ticks()
     ticks = [await anext(stream) for _ in range(len(provider.subscriptions))]
     assert len({t.instrument_id for t in ticks}) == 30
-    assert {t.asset_class for t in ticks} == set(AssetClass)
+    assert {t.asset_class for t in ticks} == set(AssetClass) - {AssetClass.EQUITY}
     assert all(t.realtime_status == "simulated" and t.bid < t.ask for t in ticks)
     provider.observed(ticks[0])
     assert await provider.get_snapshot() == [ticks[0]]

@@ -679,7 +679,7 @@ async def test_explicit_source_opt_in_and_destination_migration_boundary(source,
     )
     assert result.returncode != 0 and "source capture requires base 0006" in result.stderr
     async with store.connection() as c:
-        assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+        assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
         assert await c.fetchval("SELECT to_regclass('source_capture_version')") is None
 
 

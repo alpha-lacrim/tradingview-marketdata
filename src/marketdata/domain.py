@@ -36,6 +36,7 @@ def parse_timestamp_ns(value: str) -> tuple[datetime, int]:
 
 
 class AssetClass(StrEnum):
+    EQUITY = "equity"
     CRYPTO = "crypto"
     FOREX = "forex"
     METALS = "metals"
@@ -44,6 +45,7 @@ class AssetClass(StrEnum):
 
 
 class InstrumentType(StrEnum):
+    COMMON_STOCK = "common_stock"
     SPOT = "spot"
     OTC = "otc"
     CFD = "cfd"

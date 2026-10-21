@@ -232,6 +232,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.store, app.state.writer = store, writer
     app.add_middleware(IngestGuard, owner=app, settings=settings, store=store)
+    if settings.company_tsetmc_enabled:
+        from marketdata.tsetmc.ingest import router as tsetmc_router
+
+        app.include_router(tsetmc_router(settings, store))
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, error: HTTPException) -> JSONResponse:

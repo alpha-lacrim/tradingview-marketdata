@@ -72,7 +72,7 @@ def test_release_collector_requires_capture_before_secret_loading(tmp_path, monk
 @pytest.mark.integration
 async def test_actual_destination_source_boundary(store):
     async with store.connection() as c:
-        assert (await boundary(c, "company", complete=True))["base"] == "0010"
+        assert (await boundary(c, "company", complete=True))["base"] == "0011"
         with pytest.raises(ValueError, match="destination"):
             await boundary(c, "collector")
 

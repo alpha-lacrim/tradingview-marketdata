@@ -83,7 +83,11 @@ def test_recovery_openapi_is_typed_and_read_contract_stays_separate():
     ] == {"$ref": "#/components/schemas/RecoveryRequest"}
     assert schema["components"]["schemas"]["RecoveryStream"]["additionalProperties"] is False
     assert not any(path.startswith("/api/v1/") for path in schema["paths"])
-    assert schema == json.loads(Path("docs/fastapi-v1.1-ingest-openapi.json").read_text())
+    expected = json.loads(Path("docs/fastapi-v1.1-ingest-openapi.json").read_text())
+    expected["components"]["schemas"]["RecoveryStream"]["properties"]["stream"]["enum"].extend(
+        ["tsetmc_daily", "tsetmc_current", "tsetmc_coverage", "tsetmc_status"]
+    )
+    assert schema == expected
 
     def check_refs(value):
         if isinstance(value, dict):
@@ -445,7 +449,7 @@ async def test_populated_0008_upgrade_preserves_market_receipts_and_recovery_rou
             }
         await migrate(url, "upgrade", "head")
         async with i.d.store.connection() as c:
-            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0010"
+            assert await c.fetchval("SELECT version_num FROM alembic_version") == "0011"
             for table, rows in before.items():
                 assert await c.fetch(f"SELECT * FROM {table}") == rows
             await c.execute(

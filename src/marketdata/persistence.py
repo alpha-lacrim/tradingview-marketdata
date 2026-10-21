@@ -96,6 +96,12 @@ class Store:
         )
         async with self.connection() as connection:
             version = await connection.fetchval("SELECT version_num FROM alembic_version")
+            if self.settings.company_tsetmc_enabled:
+                if version != "0011":
+                    raise RuntimeError("TSETMC integration requires destination migration 0011")
+                from marketdata.tsetmc.permissions import validate_permissions
+
+                await validate_permissions(connection, read_only=self.read_only)
             if self.settings.source_capture_enabled:
                 extension = await connection.fetchval(
                     "SELECT to_regclass('source_capture_version')"
@@ -108,7 +114,7 @@ class Store:
                     not in {"sc0001", "sc0002"}
                 ):
                     raise RuntimeError("source capture requires base 0006 plus source sc0001")
-            elif version != "0010":
+            elif version not in {"0010", "0011"}:
                 if version == "0006" and await connection.fetchval(
                     "SELECT to_regclass('source_capture_version')"
                 ):

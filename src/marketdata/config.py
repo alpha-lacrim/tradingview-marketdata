@@ -12,6 +12,7 @@ ProviderName = Literal["mock", "binance", "oanda", "databento", "tradingview_gue
 
 
 class Settings(BaseSettings):
+    company_tsetmc_enabled: bool = False
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
     application_role: Literal["api", "ingest", "collector", "combined"] = "api"
