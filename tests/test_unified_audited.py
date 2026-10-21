@@ -3,6 +3,7 @@
 import argparse
 import importlib.util
 import json
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from test_market_stream import HEADERS, ORIGIN, server, ws_url
@@ -100,7 +101,12 @@ async def test_worker_alias_reads_replay_and_retention_floor(ingress_tsetmc):  #
         ) as ws:
             initial = json.loads(await ws.recv())
             assert initial["type"] == "snapshot"
-            assert (await upload(i, i.t.batch("status"), name="batches")).status_code == 200
+            status = i.t.batch("status")
+            observation = status["records"][0]["observation"]
+            now = datetime.now(UTC)
+            observation["captured_at"] = (now - timedelta(seconds=1)).isoformat()
+            observation["expires_at"] = (now + timedelta(seconds=60)).isoformat()
+            assert (await upload(i, status, name="batches")).status_code == 200
             for _ in range(100):
                 change = json.loads(await ws.recv())
                 if change.get("items"):
