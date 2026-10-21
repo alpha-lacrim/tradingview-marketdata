@@ -13,15 +13,15 @@ now rejects stale cursors. Optional batch/receipt URL aliases reuse audited inge
 for the already-published source worker; both flags must be enabled. No old writer,
 old wire validator, alternate migration or role SQL was imported.
 
-Still required before merging: finish discovery compatibility (existing domain enums
-exclude equity), adapt atomic administrative setup and connection generator to audited
-InstrumentBinding/provision (explicit approval evidence/source identity/units), port
-setup/HTTPS/READ tests using existing strict disposable DB guards, run actual PG suite,
-fix OpenAPI expectations if necessary, update deployment guide and source handoff links,
-update graph, commit and push main only after checks pass. Default test run is active
-in artifacts-reconcile-tests.log; it skips PG because no approved fixture proof exists
-in this new worktree. Do not bypass the existing fixture ownership checks. Source
-portable binaries and prior task cluster are available but stopped. No services deployed.
+Setup generation and atomic enrollment now use audited InstrumentBinding/register/provision.
+Iranian discovery has its own route/client method on the same company origin, preserving
+legacy DTOs. Regression coverage checks restricted ingest aliases, read-only HTTP,
+WebSockets, retention floor and generated setup. Local default suite:510 passed,
+363 skipped (database tests unavailable locally); lint/format and mypy65 pass.
+GitHub CI runs actual owned PostgreSQL16.1 and TimescalePG17.7 databases, full suites
+and guarded migration roundtrips. Run39560323419 tests the initial reconciliation;
+a subsequent push includes the additional setup regression. Final CI outcome must
+be checked before merging. No deployment, pilot or company DB was activated.
 
 ---
 

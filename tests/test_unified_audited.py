@@ -1,5 +1,7 @@
 """Shared dashboard routes over audited storage, using real restricted SQL roles."""
 
+import argparse
+import importlib.util
 import json
 
 import httpx
@@ -10,6 +12,51 @@ from websockets.asyncio.client import connect
 
 from marketdata.config import Settings
 from marketdata.persistence import Store
+
+
+async def test_generated_setup_is_atomic_and_refuses_reenrollment(store, tmp_path):
+    import pytest
+    from tsetmc_helpers import example
+
+    from marketdata.tsetmc.admin import setup
+
+    spec = importlib.util.spec_from_file_location(
+        "setup_files", "scripts/prepare_tsetmc_connection.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    units = tmp_path / "units.json"
+    units.write_text(json.dumps(example("daily.request")["records"][0]["observation"]["units"]))
+    async with store.connection() as c:
+        destination = str(await c.fetchval("SELECT destination_id FROM ingest_destination_state"))
+    target = tmp_path / "connection"
+    module.prepare(
+        argparse.Namespace(
+            endpoint="https://synthetic.example",
+            ins_code="900000000000000003",
+            destination_id=destination,
+            display_name="Synthetic setup",
+            exchange="SYNTHETIC",
+            source_instrument_id="SYNTHETIC-SETUP",
+            approval_evidence="synthetic-test-only",
+            units_file=units,
+            output=target,
+        )
+    )
+    dsn = tmp_path / "dsn"
+    dsn.write_text(store.settings.database_url.get_secret_value())
+    await setup(dsn, target / "company-plan.json")
+    async with store.connection() as c:
+        before = await c.fetch("SELECT * FROM company_tsetmc.instrument_links")
+        assert len(before) == 1 and before[0]["enabled"]
+        assert (
+            await c.fetchval("SELECT count(*) FROM ingest_source_owners WHERE provider='tsetmc'")
+            == 4
+        )
+    with pytest.raises(ValueError, match="binding already exists"):
+        await setup(dsn, target / "company-plan.json")
+    async with store.connection() as c:
+        assert await c.fetch("SELECT * FROM company_tsetmc.instrument_links") == before
 
 
 async def test_worker_alias_reads_replay_and_retention_floor(ingress_tsetmc):  # noqa: F811
