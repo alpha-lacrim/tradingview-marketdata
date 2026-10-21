@@ -1,7 +1,7 @@
 # Graph Report - tradingview-main-consolidation  (2026-10-21)
 
 ## Corpus Check
-- 564 files · ~1,165,975 words
+- 564 files · ~1,166,018 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 50 file(s) not represented in the graph (top: (none) 18, .lock 8, .ini 6)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c3886eaf`
+- Built from commit: `d21dcb1e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -557,7 +557,7 @@ Nodes (6): parse_bar(), TradingViewCandleProvider, validate_source(), parse_bar(
 
 ### Community 59 - "README.md"
 Cohesion: 0.19
-Nodes (3): Batch 4 measured API performance, Native 1-minute candle verification - 2026-10-07, Active reconciliation — 2026-10-21
+Nodes (3): Batch 4 measured API performance, Native 1-minute candle verification - 2026-10-07, Unified dashboard on audited storage - 2026-10-21
 
 ### Community 63 - "marketdata-collector-sync-v1.1.0rc1/src/marketdata/candle_ingestion.py"
 Cohesion: 0.11

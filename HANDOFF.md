@@ -1,27 +1,36 @@
-# Active reconciliation — 2026-10-21
+# Unified dashboard on audited storage - 2026-10-21
 
-User explicitly approved merging the unified integration to main; no production is active.
-TSETMC source commit af5e180 is already pushed to its main branch. Company main is
-6c8253d3 with audited M3B-2 schema0011. Earlier unified branch c71c3f07 has an
-incompatible alternate0011 and must NOT be merged as-is. Original working checkout
-and its user edits remain untouched. This managed worktree, branch
-codex/reconcile-unified-main, is the integration workspace.
+User approved integrating both repositories to main; no production is active.
+TSETMC af5e180 is already on source main. This company implementation is based
+on audited main6c8253d3 and preserves its migration0011, nine tables, financial
+constraints, immutable evidence, permissions, fenced recovery and event retention.
+Do NOT merge the older c71c3f07 branch's incompatible alternate migration0011.
 
-In-progress changes adapt the earlier dashboard reads to audited daily_records,
-current_latest, source_status, daily_coverage and event_clock/events. Retention floor
-now rejects stale cursors. Optional batch/receipt URL aliases reuse audited ingestion
-for the already-published source worker; both flags must be enabled. No old writer,
-old wire validator, alternate migration or role SQL was imported.
+Optional COMPANY_TSETMC_ENABLED adds Iranian discovery, latest/daily/coverage,
+replay and WebSocket reads to the existing READ application. Its ingest aliases
+reuse audited validation/storage for the published independent source worker;
+INGEST also needs TSETMC_INGEST_ENABLED. Atomic setup uses audited administrative
+binding/provision functions with explicit source identity/units/approval evidence.
+Read docs/unified-dashboard-flow.md and examples/unified-dashboard.mjs.
 
-Setup generation and atomic enrollment now use audited InstrumentBinding/register/provision.
-Iranian discovery has its own route/client method on the same company origin, preserving
-legacy DTOs. Regression coverage checks restricted ingest aliases, read-only HTTP,
-WebSockets, retention floor and generated setup. Local default suite:510 passed,
-363 skipped (database tests unavailable locally); lint/format and mypy65 pass.
-GitHub CI runs actual owned PostgreSQL16.1 and TimescalePG17.7 databases, full suites
-and guarded migration roundtrips. Run39560323419 tests the initial reconciliation;
-a subsequent push includes the additional setup regression. Final CI outcome must
-be checked before merging. No deployment, pilot or company DB was activated.
+Final application/test code d21dcb1e passed GitHub run39563435607:
+https://github.com/alpha-lacrim/tradingview-marketdata/actions/runs/39563435607
+PostgreSQL16.1:871 passed,8 skipped; TimescalePG17.7:874 passed,5 skipped.
+BOTH passed lint, format, strict mypy, ownership guards, upgrade, downgrade-base
+and re-upgrade. Local packages built and Compose config validated. Earlier runs
+failed the new test's expired/noncanonical status fixture and then disposable
+cleanup before downgrade; those failures remain in CI history. Runtime validation
+and production downgrade protection were preserved. Final fixture cleanup uses
+only the shared positively verified disposable store. No database safety bypass.
+
+This subsequent handoff update changes documentation only. Original working
+checkout/user edits, source pilot, databases and frozen releases remain untouched.
+No production or live collection was activated. Actual company TLS/login, genuine
+feed selection/coverage, source rights and restore/cutover remain deployment gates.
+Source retained-batch audit ceiling and dedicated worker SQL hardening still apply.
+
+Next: use matching main checkouts for an approved staging deployment following the
+guide. Do not deploy the old candidate archives or the superseded company branch.
 
 ---
 
