@@ -51,4 +51,7 @@ cleanup/reconnection and preserves one-shot failure behavior. Provider access
 rejections still follow their existing permanent-error path. No database/schema
 changes; pending files remain intact. This does not establish why the upstream
 connection closed, nor solve independent API response timeouts.
-`nFix validation: regression 14 passed / 3 database skips; full local suite 528`npassed / 368 skipped, Ruff/format and strict mypy passed. Database, optional`nprovider and live tests were not enabled for this transport-only change.
+
+Fix validation: regression 14 passed / 3 database skips; full local suite 528
+passed / 368 skipped, Ruff/format and strict mypy passed. Database, optional
+provider and live tests were not enabled for this transport-only change.
