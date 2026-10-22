@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from websockets.exceptions import ConnectionClosed, InvalidStatus
+from websockets.exceptions import ConnectionClosed, InvalidMessage, InvalidStatus
 
 from marketdata.candles import MarketCandle
 from marketdata.config import Settings
@@ -141,7 +141,13 @@ async def run(args: argparse.Namespace) -> None:
                         raise RuntimeError(f"history failed for {failed} sources")
                 except PermanentProviderError:
                     raise
-                except (OSError, TimeoutError, ConnectionClosed, InvalidStatus) as error:
+                except (
+                    OSError,
+                    TimeoutError,
+                    ConnectionClosed,
+                    InvalidMessage,
+                    InvalidStatus,
+                ) as error:
                     print(f"history transport: {type(error).__name__}; retrying", flush=True)
                     if args.once:
                         raise

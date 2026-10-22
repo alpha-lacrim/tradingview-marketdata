@@ -84,7 +84,9 @@ omissions and history beyond this horizon are not synthesized. Persisted company
 history accumulates over time. Quotes use a separate stream and send latest
 snapshots approximately every five seconds; this is not an archive of every tick.
 
-`--once` sends one history cycle and exits. Normal operation continues until stopped.
+`--once` sends one history cycle and exits, reporting provider failures as errors.
+Normal operation retries connection closures and incomplete WebSocket HTTP
+handshakes after a 60-second pause; provider access rejections remain fatal.
 The default pending-file directory is `.local/simple-tradingview/`; `--state-dir`
 selects another durable directory. Only one collector may own a given directory.
 If uploads fail, the pending batch stays on disk and new history acquisition waits.

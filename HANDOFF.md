@@ -39,3 +39,16 @@ Retain old archives, especially history beyond TradingView's retrieval horizon.
 Previous handoff is `docs/history/handoff-before-native-install.md`; do not use its
 superseded deployment recommendations for this profile. Workspace recovery details
 remain in LOCAL_WORKSPACE.md. Never push the private local archive branch.
+
+## Native handshake recovery fix
+
+A live laptop run exposed an unhandled websockets InvalidMessage when the remote
+connection ended before the HTTP handshake response. The native candle loop now
+retries this transport failure after its existing 60-second delay, while --once
+still fails visibly. This prevents the history task from cancelling the quote and
+upload tasks. The regression reproduces the previous TaskGroup crash, verifies
+cleanup/reconnection and preserves one-shot failure behavior. Provider access
+rejections still follow their existing permanent-error path. No database/schema
+changes; pending files remain intact. This does not establish why the upstream
+connection closed, nor solve independent API response timeouts.
+`nFix validation: regression 14 passed / 3 database skips; full local suite 528`npassed / 368 skipped, Ruff/format and strict mypy passed. Database, optional`nprovider and live tests were not enabled for this transport-only change.

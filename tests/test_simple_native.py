@@ -307,3 +307,91 @@ async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path):
     )
     with pytest.raises(RuntimeError, match="history failed for 1 sources"):
         await collector.run(args)
+
+
+@pytest.mark.parametrize("once", [False, True])
+async def test_history_handshake_eof_retries_without_stopping_collector(
+    monkeypatch, tmp_path, once
+):
+    import asyncio
+    from types import SimpleNamespace
+
+    from websockets.exceptions import InvalidMessage
+
+    from marketdata import simple_collector as collector
+
+    pair = (
+        SimpleNamespace(canonical_symbol="TEST:ABC"),
+        SimpleNamespace(provider_symbol="TEST:ABC"),
+    )
+    recovered = asyncio.Event()
+    attempts = []
+    closed = []
+    sleeps = []
+    real_sleep = asyncio.sleep
+
+    class Provider:
+        async def subscribe(self, pairs):
+            pass
+
+        async def connect(self):
+            attempts.append(self)
+            if len(attempts) == 1:
+                raise InvalidMessage("did not receive a valid HTTP response") from EOFError()
+
+        async def disconnect(self):
+            closed.append(self)
+
+        async def fetch_many(self, jobs):
+            recovered.set()
+            return {"TEST:ABC": []}
+
+    class Quotes(Provider):
+        async def connect(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+        async def stream_ticks(self):
+            await asyncio.Event().wait()
+            if False:
+                yield
+
+    async def sleep(seconds):
+        sleeps.append(seconds)
+        await real_sleep(0)
+
+    monkeypatch.setattr(
+        collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: [pair])
+    )
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_: Provider())
+    monkeypatch.setattr(collector, "TradingViewGuestProvider", lambda *_: Quotes())
+    monkeypatch.setattr(collector.asyncio, "sleep", sleep)
+    args = SimpleNamespace(
+        registry=None,
+        history_minutes=30,
+        api_url="http://localhost:8000",
+        state_dir=tmp_path,
+        once=once,
+    )
+    if once:
+        with pytest.raises(InvalidMessage):
+            await collector.run(args)
+        assert len(attempts) == len(closed) == 1
+    else:
+        task = asyncio.create_task(collector.run(args))
+        ready = asyncio.create_task(recovered.wait())
+        try:
+            done, _ = await asyncio.wait(
+                [task, ready], timeout=2, return_when=asyncio.FIRST_COMPLETED
+            )
+            if task in done:
+                task.result()
+            assert recovered.is_set()
+            assert len(attempts) >= 2 and attempts[0] in closed
+            assert 60 in sleeps
+        finally:
+            task.cancel()
+            ready.cancel()
+            await asyncio.gather(task, ready, return_exceptions=True)

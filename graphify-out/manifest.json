@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792647928.665407,
-    "seen": 1792648019.3375826,
-    "ast_hash": "aea0f82433cc24a09222a24e6dfa91aa",
+    "mtime": 1792655043.1437821,
+    "seen": 1792655079.9833412,
+    "ast_hash": "07cac133c8ccb303b68e615a956783d2",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3534,9 +3534,9 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_collector.py": {
-    "mtime": 1792647384.1341045,
-    "seen": 1792647783.7235937,
-    "ast_hash": "5d6ec507e3329741f130e704d9d6ad0e",
+    "mtime": 1792655062.6935554,
+    "seen": 1792655079.9705985,
+    "ast_hash": "1b567a7b7a5e0065141f44be59fa4922",
     "semantic_hash": ""
   },
   "src/marketdata/simple_delivery.py": {
@@ -3558,9 +3558,9 @@
     "semantic_hash": ""
   },
   "tests/test_simple_native.py": {
-    "mtime": 1792647658.0805979,
-    "seen": 1792647783.7328048,
-    "ast_hash": "c4c34903def73c926c3e12035893fabf",
+    "mtime": 1792655017.431042,
+    "seen": 1792655079.9813654,
+    "ast_hash": "fed20dcae493649d296648f6a234c1a3",
     "semantic_hash": ""
   },
   ".github/workflows/native.yaml": {
@@ -3582,9 +3582,9 @@
     "semantic_hash": ""
   },
   "docs/native-install.md": {
-    "mtime": 1792610618.780053,
-    "seen": 1792647783.7477252,
-    "ast_hash": "ff77bc1af0a8a3f9af0c894e6450309c",
+    "mtime": 1792655043.1447587,
+    "seen": 1792655079.9951165,
+    "ast_hash": "54a8342d908279b938bd0f75d5fcba96",
     "semantic_hash": ""
   },
   "docs/history/handoff-before-native-install.md": {
