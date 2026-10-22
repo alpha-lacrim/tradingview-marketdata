@@ -77,3 +77,15 @@ const chart = await fetch(`${base}/api/chart?${query}`).then(r => {
 
 For an HTTPS dashboard use its existing HTTPS proxy URL, as described in
 [native-install.md](native-install.md). CORS cannot override browser mixed-content rules.
+
+## TSETMC validation and source-clock semantics
+
+Daily close is official close, not last trade; it can legitimately fall outside
+the executed high/low range. Unknown fields stay null in exact records, and
+zero-activity days remain stored. Native uploads reject negative TSETMC prices,
+conflicting daily close/official_close, invalid open/last ranges and empty records.
+TSETMC event times more than five minutes ahead of received_at are rejected by
+local integrity policy; older event times remain valid. Keep collector clocks
+synchronized. Current metadata labels the source-reported Tehran dEven/hEven
+clock and includes the source instrument state, without inferring market sessions
+or real-time status. State and recent HTTP receipt alone do not prove a new trade.

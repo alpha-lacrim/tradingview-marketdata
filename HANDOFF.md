@@ -84,3 +84,21 @@ and recovered after DB restart without restarting FastAPI. No live-provider
 outage was induced and the user's running laptop processes were not replaced.
 Restart the API and collectors to load these changes. Updated ZIPs must be built
 from these commits, not the earlier native or handshake-only checkpoints.
+
+## TSETMC validation qualification (2026-10-22)
+
+The source repo's docs/validation-review-2026-10-22.md records five successful
+read-only Foolad probes after VPN removal, earlier timeouts, and endpoint
+agreement. Updated source parsing/native adapter/company Batch accepted all
+4,666 genuine history rows and one current observation offline, without writes.
+Company TSETMC uploads now reject negative prices, insCodes over 30 digits,
+empty measurements, inconsistent daily close/official_close, invalid open/last
+ranges (preserving zero activity), and event times >5 minutes ahead of receipt.
+Official close outside the executed range and stale quotes remain valid.
+
+Validation: full company suite 562 passed / 365 skipped with native disposable
+PostgreSQL, including atomic TSETMC rejection; Ruff/format and strict mypy passed.
+Source suite 303 passed / 119 skipped includes old private-capture regressions.
+No schema or existing records changed. Source clocks must be synchronized.
+Restart API and collectors for new validation. Updated deployment ZIPs must use
+this validation revision; previous recovery bundles lack these additional rules.

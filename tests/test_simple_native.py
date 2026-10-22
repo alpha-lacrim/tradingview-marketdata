@@ -466,3 +466,62 @@ def test_websocket_database_failure_closes_for_reconnect():
         with pytest.raises(WebSocketDisconnect) as caught:
             ws.receive_json()
         assert caught.value.code == 1013
+
+
+@pytest.mark.parametrize(
+    "update",
+    [
+        {"open": "-1"},
+        {"last": "-1"},
+        {"official_close": "-1"},
+        {"open": "4"},
+        {"last": "4"},
+        {"official_close": "2.5"},
+        {"symbol": "1" * 31},
+        {"event_at": "2026-07-17T00:06:00Z"},
+    ],
+)
+def test_tsetmc_upload_rejects_invalid_measurements(update):
+    row = observation()
+    row.update(market="tsetmc", symbol="123", interval="1d", official_close="2")
+    row.update(update)
+    with pytest.raises(ValidationError):
+        Observation.model_validate(row)
+
+
+def test_tsetmc_upload_preserves_close_semantics_zero_activity_and_staleness():
+    row = observation()
+    row.update(
+        market="tsetmc",
+        symbol="123",
+        interval="1d",
+        close="10",
+        official_close="10",
+        event_at="2026-07-15T09:00:00Z",
+    )
+    assert Observation.model_validate(row).close == 10
+    row.update(count=0, volume="0", open="0", last="0")
+    assert Observation.model_validate(row).open == 0
+    row.update(
+        open=None,
+        close=None,
+        high=None,
+        low=None,
+        last=None,
+        official_close=None,
+        volume=None,
+        count=None,
+    )
+    with pytest.raises(ValidationError, match="no observed measurements"):
+        Observation.model_validate(row)
+
+
+async def test_tsetmc_bad_upload_is_atomic(native_store):
+    row = observation()
+    row.update(market="tsetmc", symbol="123", interval="1d")
+    bad = dict(row, time=row["time"] + 86400, last="-1")
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=native_store)), base_url="http://company"
+    ) as http:
+        assert (await http.post("/api/ingest", content=body([row, bad]))).status_code == 422
+    assert await native_store.pool.fetchval("SELECT count(*) FROM simple_marketdata.records") == 0

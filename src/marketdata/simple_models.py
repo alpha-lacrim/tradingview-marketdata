@@ -1,7 +1,7 @@
 """Small shared HTTP contract for the native installation; decimals stay exact on disk."""
 
 import math
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any, Literal, Self
 from uuid import UUID
@@ -81,6 +81,45 @@ class Observation(BaseModel):
             not self.symbol.isascii() or not self.symbol.isdigit() or self.interval == "1m"
         ):
             raise ValueError("TSETMC requires native insCode and daily history")
+        if self.market == "tsetmc":
+            if len(self.symbol) > 30:
+                raise ValueError("TSETMC insCode exceeds 30 digits")
+            measurements = (
+                self.open,
+                self.close,
+                self.high,
+                self.low,
+                self.last,
+                self.bid,
+                self.ask,
+                self.official_close,
+                self.volume,
+                self.value,
+            )
+            if any(v is not None and v < 0 for v in measurements):
+                raise ValueError("TSETMC measurements must be nonnegative")
+            if self.count is None and all(v is None for v in measurements):
+                raise ValueError("TSETMC record contains no observed measurements")
+            if self.high is not None and self.low is not None:
+                if self.high < self.low:
+                    raise ValueError("high is below low")
+                if self.low > 0 and self.count != 0 and self.volume != 0:
+                    if any(
+                        v is not None and not self.low <= v <= self.high
+                        for v in (self.open, self.last)
+                    ):
+                        raise ValueError("TSETMC open/last is outside the executed trading range")
+            if self.interval == "1d" and self.close is not None and self.official_close is not None:
+                if self.close != self.official_close:
+                    raise ValueError(
+                        "TSETMC daily close must equal official_close when both supplied"
+                    )
+            if self.event_at is not None and self.event_at > self.received_at + timedelta(
+                minutes=5
+            ):
+                raise ValueError(
+                    "TSETMC source clock exceeds receive time by more than five minutes"
+                )
         if self.market == "tradingview" and self.interval == "1d":
             raise ValueError("upload TradingView native 1m bars; daily bars are queried aggregates")
         return self
