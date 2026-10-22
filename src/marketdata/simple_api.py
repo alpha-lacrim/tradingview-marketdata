@@ -137,14 +137,28 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
             raise HTTPException(409, str(error)) from None
 
     @app.get("/api/instruments")
-    async def instruments() -> list[dict[str, Any]]:
+    async def instruments(
+        market: Market | None = None,
+        limit: int = Query(1000, ge=1, le=5000),
+        offset: int = Query(0, ge=0),
+    ) -> list[dict[str, Any]]:
         assert db.pool is not None
         async with db.connection() as conn:
-            rows = await conn.fetch("""SELECT market,symbol,
+            rows = await conn.fetch(
+                """WITH selected AS (SELECT market,symbol,
                 array_agg(DISTINCT interval) AS intervals,
                 max(received_at) AS last_received_at
                 FROM simple_marketdata.records
-                GROUP BY market,symbol ORDER BY market,symbol LIMIT 1000""")
+                WHERE ($1::text IS NULL OR market=$1)
+                GROUP BY market,symbol ORDER BY market,symbol LIMIT $2 OFFSET $3)
+                SELECT s.*,coalesce(q.data->'metadata'->>'display_name',s.symbol) AS display_name
+                FROM selected s LEFT JOIN simple_marketdata.records q
+                ON q.market=s.market AND q.symbol=s.symbol AND q.interval='quote' AND q.time=0
+                ORDER BY s.market,s.symbol""",
+                market,
+                limit,
+                offset,
+            )
         return [dict(r) for r in rows]
 
     async def latest_row(market: str, symbol: str) -> dict[str, Any]:

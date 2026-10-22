@@ -196,3 +196,44 @@ def test_business_accounting_excludes_closures_and_keeps_unknown_and_source_abse
     untouched = module.measure(candidate, {})
     assert untouched["expected_test_minutes"] is None and untouched["unknown_session_minutes"] == 60
     assert untouched["eventual_completeness_percentage"] is None
+
+
+def test_native_hundred_feed_mix_and_preserved_identities():
+    native = Registry.load(Path("config/instruments.tradingview-native100.json"))
+    old = Registry.load(Path("config/instruments.tradingview-business-candidates.json"))
+    pairs = native.subscriptions("tradingview_guest")
+    assert len(pairs) == 100
+    assert sum(i.asset_class == "crypto" for i, _ in pairs) == 50
+    assert sum(i.asset_class == "forex" for i, _ in pairs) == 42
+    assert sum(i.asset_class == "metals" for i, _ in pairs) == 5
+    assert sum(i.asset_class == "energy" for i, _ in pairs) == 3
+    for instrument, mapping in pairs:
+        previous = old.by_provider.get((mapping.provider, mapping.provider_symbol))
+        if previous:
+            assert instrument == previous[0]
+        assert "!" not in mapping.provider_symbol
+    crypto = [m for i, m in pairs if i.asset_class == "crypto"]
+    assert [m.metadata["ranking_position"] for m in crypto] == list(range(1, 51))
+
+
+def test_native_ranking_rejects_duplicates_and_uses_volume_not_input_order():
+    spec = importlib.util.spec_from_file_location(
+        "prepare_native", "scripts/prepare_native_universe.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    known = json.loads(Path("config/instruments.tradingview-business-candidates.json").read_text())
+    rows = [
+        dict(
+            s=f"BINANCE:TEST{i}USDT",
+            d=[f"TEST{i}USDT", "BINANCE", "spot", "USDT", f"TEST{i}", i + 1],
+        )
+        for i in range(51)
+    ]
+    ranking = dict(captured_at="2026-01-01T00:00:00Z", response=dict(data=rows))
+    selected = module.prepare(ranking, {"data": []}, known)
+    assert selected[0]["mappings"][0]["provider_symbol"] == "BINANCE:TEST50USDT"
+    assert selected[49]["mappings"][0]["provider_symbol"] == "BINANCE:TEST1USDT"
+    rows.append(rows[0])
+    with pytest.raises(ValueError, match="distinct"):
+        module.prepare(ranking, {"data": []}, known)

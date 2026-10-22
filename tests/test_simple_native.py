@@ -525,3 +525,23 @@ async def test_tsetmc_bad_upload_is_atomic(native_store):
     ) as http:
         assert (await http.post("/api/ingest", content=body([row, bad]))).status_code == 422
     assert await native_store.pool.fetchval("SELECT count(*) FROM simple_marketdata.records") == 0
+
+
+async def test_instrument_directory_pages_and_names(native_store):
+    rows = [
+        dict(observation(), market="tsetmc", symbol=str(10000 + i), interval="1d")
+        for i in range(1002)
+    ]
+    quote = dict(
+        rows[0], interval="quote", time=0, last="2", metadata={"display_name": "Synthetic share"}
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=native_store)), base_url="http://company"
+    ) as http:
+        assert (await http.post("/api/ingest", content=body(rows + [quote]))).status_code == 200
+        page = (await http.get("/api/instruments?market=tsetmc")).json()
+        assert len(page) == 1000 and page[0]["display_name"] == "Synthetic share"
+        tail = (await http.get("/api/instruments?market=tsetmc&offset=1000")).json()
+        assert [r["symbol"] for r in tail] == ["11000", "11001"]
+        assert (await http.get("/api/instruments?market=tradingview")).json() == []
+        assert (await http.get("/api/instruments?offset=-1")).status_code == 422

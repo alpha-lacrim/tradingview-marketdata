@@ -70,9 +70,12 @@ export COMPANY_API_URL='http://SERVER:8000'
 uv run --no-sync tradingview-simple
 ```
 
-This selects the existing provisional 99-source business registry. The same native
-provider identity/access/status checks still apply: configuring 99 sources does
-not establish that all 99 are available. Failures are reported per source.
+This selects `config/instruments.tradingview-native100.json`: 50 Binance spot USDT
+pairs ranked by captured TradingView 24-hour USD volume, 42 forex feeds (21 pairs
+from each of OANDA and FXCM), five metals feeds and three OANDA energy feeds.
+The frozen ranking does not rotate automatically. All 100 supplied native bars and
+accepted quotes in a bounded live check; this is not a guarantee of continuing
+availability or complete minute coverage. Failures are reported per source.
 Select another existing registry with `--registry config/instruments.tradingview-pilot.json`.
 The configured limit is 100 sources. Symbols in the API are exact provider symbols,
 for example `BINANCE:BTCUSDT`, `OANDA:EURUSD` and `FX:EURUSD` remain distinct.
@@ -106,17 +109,24 @@ export COMPANY_API_URL='http://SERVER:8000'
 uv run --no-sync tsetmc-simple
 ```
 
-No PostgreSQL or company DB credentials are needed here. This collects the verified
-Foolad identity (`46348559193224090`), current observations every 15 seconds and
-available native daily history hourly. `--poll-seconds` and `--history-seconds`
-adjust the periods. `--once` fetches history and current data once. Metadata and
-source parsers are shared with the existing collector. Conflicting/malformed
-history is rejected and reported, rather than partially presented as complete.
+No PostgreSQL or company DB credentials are needed here. The default discovers
+primary ordinary shares (745 candidates in the latest TSETMC capture), verifies
+metadata per instrument, and collects current observations and native daily history.
+Use repeated `--ins-code` arguments for a smaller watchlist, e.g.
+`--ins-code 46348559193224090` retains Foolad-only operation.
 
-Default state directory: `.local/simple-tsetmc/`. Preserve it across restarts.
-Broader Iranian instrument coverage and minute history are not claimed. Daily
-records retain unverified finality; quote freshness includes the original source
-time when supplied. Recent collection does not turn an old price into a live trade.
+The client shares paced requests across both streams. Latest sweeps take minutes
+for hundreds of instruments, followed by `--poll-seconds` (15 seconds by default).
+Full history refreshes per instrument every `--history-seconds` (86400 by default);
+acknowledged history completion survives restarts. `--once` forces one full pass.
+Malformed history skips that instrument visibly; unrelated instruments continue.
+Access denials and permanent upload failures stop. The original pilot is untouched.
+
+Default state directory: `.local/simple-tsetmc/`. Preserve pending files and the
+history checkpoint across restarts. If intentionally replacing the company database,
+archive that state directory and use a new one; the same URL cannot detect a DB reset.
+No native minute history, full-market finality or 15-second freshness for every share
+is claimed. Source timestamps remain unchanged. See [expanded coverage](native-instruments.md).
 
 ## 4. Connect the dashboard
 

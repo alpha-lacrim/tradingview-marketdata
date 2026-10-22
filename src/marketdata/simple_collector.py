@@ -256,7 +256,7 @@ def main() -> None:
     parser.add_argument(
         "--registry",
         type=Path,
-        default=Path("config/instruments.tradingview-business-proposal.json"),
+        default=Path("config/instruments.tradingview-native100.json"),
     )
     parser.add_argument("--state-dir", type=Path, default=Path(".local/simple-tradingview"))
     parser.add_argument("--history-minutes", type=int, default=1440)

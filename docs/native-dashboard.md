@@ -3,6 +3,10 @@
 Use one API base URL for both markets. Reads require no token. Call
 `GET /api/instruments` to discover sources that have actually reached PostgreSQL.
 TradingView uses exact provider symbols; TSETMC uses insCode strings.
+The directory accepts `market=tsetmc` or `market=tradingview`, `limit` (default 1000,
+maximum 5000), and `offset`. Fetch subsequent pages until one is shorter than limit.
+`display_name` is the latest quote metadata name when supplied, otherwise the source
+ID. TSETMC names/company/ISIN metadata also appear on exact records and latest quotes.
 
 ## ChartData
 

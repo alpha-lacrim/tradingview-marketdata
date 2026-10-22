@@ -1,104 +1,73 @@
 # Current state - native installation, 2026-10-22
 
-The default is now `docs/native-install.md`: one native FastAPI, one new company
-PostgreSQL database, and two direct HTTP collectors with durable retry files.
-No Docker, TimescaleDB, collector databases or producer registration are required.
-The owner explicitly authorized open API/browser access and optional upload tokens.
+One FastAPI/company PostgreSQL, two direct HTTP collectors, durable retry files.
+No Docker or source database required. Open API/CORS and optional upload token are
+owner-authorized. Use docs/native-install.md and docs/native-dashboard.md.
+Frozen distributions, old databases, and legacy pipelines remain untouched. Native
+schema v1 refuses legacy initialization; existing native users need no migration.
+Keep LOCAL_WORKSPACE.md and docs/workspace.md recovery guidance; never push the
+private local archive branch or prune the shared Git store.
 
-`marketdata-simple init/serve` owns the separate `simple_marketdata` schema v1.
-`tradingview-simple` reuses existing provider parsing and the provisional 99-source
-registry. TSETMC's matching `tsetmc-simple` lives in the other repository.
-The dashboard contract is `/api/chart` (a..h arrays plus i:null), with latest,
-exact records, correction journal and WebSocket endpoints documented in
-`docs/native-dashboard.md`. Decimals stay strings in JSONB until chart conversion.
-Uploads are atomic and idempotent; pending files survive lost responses. Older
-observations cannot replace newer data. Quote event time is preserved separately.
+## Current coverage and expansion
 
-Validation: Ruff, format, strict mypy passed; full pytest 534 passed / 364 skipped.
-Native tests use an explicitly marked disposable PostgreSQL 16.1 database.
-Legacy PostgreSQL/Timescale and live tests were not requalified for this additive
-profile. Both wheels built; the API wheel includes its SQL initialization resource.
-Actual loopback HTTP smoke exercised both upload formats, TSETMC fixture parsers,
-PostgreSQL chart/latest reads and WebSocket changes using synthetic upstream data.
-This is infrastructure verification, not live coverage qualification.
+The owner approved expansion and Binance ranking by highest trading volume.
+Native TradingView default is config/instruments.tradingview-native100.json:
+50 Binance spot USDT pairs ranked by captured TradingView 24h_vol|5 USD turnover,
+42 forex feeds (21 pairs from both OANDA and FXCM), five metals and three OANDA
+energy CFDs. FXCM provider namespace is FX:. Tick/unknown volume is not exchange
+traded volume. Read docs/native-instruments.md for selection, all symbols and limits.
+Existing pilot34/business99/accuracy100 configurations are unchanged. An explicit
+--registry pilot argument still restricts the collector to 34 sources.
 
-Ubuntu instructions and user systemd units are supplied, not deployed. Automatic
-company CI now tests native PostgreSQL on Ubuntu; legacy Docker CI remains manual.
-No employer host/access was supplied. Follow the installation guide there, start
-collectors, and give the frontend team the API URL and dashboard contract.
+Read-only bounded native probes accepted bars and quotes for all 100 selected feeds.
+Some minute slots were absent; no bars were synthesized. Five commodities absent
+from the global scanner still passed native chart identity/status checks. Ranking
+is a frozen snapshot, not automatic rotation. Raw ranking/directory/probe outputs
+are ignored under .local/expansion-20261022/. scripts/prepare_native_universe.py
+rebuilds the list from private snapshots. Previous identity UUIDs are preserved.
 
-Limits: Foolad only for TSETMC, native daily history with unverified finality;
-TradingView registry availability is provisional, not 99 proven feeds. Recovery
-requests up to 1440 minutes; longer outages can leave gaps. Quote snapshots are
-not a full tick archive. Unknown chart metrics use documented zero placeholders.
-Stored history remains readable with collectors offline. Monitor database growth.
+Companion TSETMC native default discovers primary shares (745 candidates in a
+3,462-row market-watch snapshot), qualifies metadata individually and uses the
+existing daily/current endpoints. Four sampled families passed source parsing;
+not all 745 are live-qualified. The bulk endpoint has zero date/price placeholders
+and is used only for discovery. Pacing means broad latest sweeps take minutes,
+not 15 seconds. Per-instrument full-history refresh is daily, with durable success
+checkpoints; a smaller explicit --ins-code watchlist has better freshness.
 
-Existing databases, frozen distributions and legacy pipelines remain intact.
-Native initialization refuses legacy databases; no old history is auto-imported.
-Retain old archives, especially history beyond TradingView's retrieval horizon.
-Previous handoff is `docs/history/handoff-before-native-install.md`; do not use its
-superseded deployment recommendations for this profile. Workspace recovery details
-remain in LOCAL_WORKSPACE.md. Never push the private local archive branch.
+/api/instruments now accepts market, limit (1..5000, default1000), offset and adds
+latest quote metadata display_name (otherwise symbol). Paging prevents silent loss
+beyond 1000 instruments. Source ID is still the chart/latest key. Chart a..h/i:null
+and exact Decimal storage, correction history and receipt contracts are unchanged.
 
-## Native handshake recovery fix
+## Recovery and integrity retained
 
-A live laptop run exposed an unhandled websockets InvalidMessage when the remote
-connection ended before the HTTP handshake response. The native candle loop now
-retries this transport failure after its existing 60-second delay, while --once
-still fails visibly. This prevents the history task from cancelling the quote and
-upload tasks. The regression reproduces the previous TaskGroup crash, verifies
-cleanup/reconnection and preserves one-shot failure behavior. Provider access
-rejections still follow their existing permanent-error path. No database/schema
-changes; pending files remain intact. This does not establish why the upstream
-connection closed, nor solve independent API response timeouts.
+TradingView reconnects on ConnectionClosed/InvalidMessage/InvalidStatus and network
+timeouts with 60..300s backoff; reduced request concurrency survives reconnect.
+Permanent access errors stop. Uploads in both collectors preserve exact bytes until
+a matching receipt, retry transient errors with 30..300s backoff and honor longer
+Retry-After. Permanent failures/malformed receipts retain files and fail visibly.
+API operations have 20s budgets and 5s pool acquisition; transient DB failures return
+503/Retry-After30, WebSockets close1013. Access logs are off unless --access-log.
 
-Fix validation: regression 14 passed / 3 database skips; full local suite 528
-passed / 368 skipped, Ruff/format and strict mypy passed. Database, optional
-provider and live tests were not enabled for this transport-only change.
+TSETMC validation rejects bad identity types/nested conflicts, empty measurements,
+negative prices, inconsistent closes and clocks >5min ahead of receipt. Stale quotes,
+zero activity and official close outside trade high/low remain valid. Earlier
+qualification: source docs/validation-review-2026-10-22.md. Do not erase pending
+files. After intentional company DB replacement use a new archived/separate collector
+state directory: a same-URL database reset cannot invalidate source checkpoints.
 
-## Native recovery hardening
+## Verification and next operation
 
-Both collectors now report upload HTTP/transport causes, pending filenames,
-exponential retry delays (30..300 seconds), recovery, and honor HTTP-date/numeric
-Retry-After even when longer. Bad/non-object receipts and permanent rejections
-retain pending files and fail visibly. The delivery helper copies are identical.
-TradingView preserves reduced concurrency across reconnects, backs off repeated
-failures (60..300 seconds), reports close/cause codes and actual delivered/empty
-bar counts, and stops on provider-wide permanent rejection. Unknown programming
-errors are no longer swallowed by the quote reconnect loop.
-TSETMC drains staged uploads before identity lookup; transient startup lookup
-failures retry while invalid identity/access failures remain fatal.
+Company full suite with disposable native PostgreSQL: 565 passed / 365 skipped.
+Source suite: 306 passed / 119 skipped. Ruff/format/mypy and both builds passed.
+Tests cover >1000 directory paging/names, source isolation, malformed-instrument
+continuation, exact receipts and acknowledged history resume after restart.
+Legacy PG/live tests are opt-in; no old DB writes, no employer deployment or live
+company uploads were performed. Short source probes are not sustained qualification.
 
-API database operations have a 20-second budget including a five-second pool
-acquire limit; temporary database/network failures return 503 + Retry-After: 30.
-WebSockets close with 1013 for reconnect. Per-request console access logs are off
-by default (`--access-log` opts in); this reduces Windows terminal traffic but
-cannot guarantee recovery from a paused terminal or unresponsive process.
-No schema, stored quote semantics or chart contract changed.
-
-Validation: full company suite 551 passed / 365 skipped, followed by all 38 native
-recovery tests passing after an additional permanent-rejection case. Ruff/format
-and strict mypy passed. Source suite 281 passed / 119 skipped. An isolated native
-PostgreSQL outage returned HTTP 503 for health/instruments, kept OpenAPI at 200,
-and recovered after DB restart without restarting FastAPI. No live-provider
-outage was induced and the user's running laptop processes were not replaced.
-Restart the API and collectors to load these changes. Updated ZIPs must be built
-from these commits, not the earlier native or handshake-only checkpoints.
-
-## TSETMC validation qualification (2026-10-22)
-
-The source repo's docs/validation-review-2026-10-22.md records five successful
-read-only Foolad probes after VPN removal, earlier timeouts, and endpoint
-agreement. Updated source parsing/native adapter/company Batch accepted all
-4,666 genuine history rows and one current observation offline, without writes.
-Company TSETMC uploads now reject negative prices, insCodes over 30 digits,
-empty measurements, inconsistent daily close/official_close, invalid open/last
-ranges (preserving zero activity), and event times >5 minutes ahead of receipt.
-Official close outside the executed range and stale quotes remain valid.
-
-Validation: full company suite 562 passed / 365 skipped with native disposable
-PostgreSQL, including atomic TSETMC rejection; Ruff/format and strict mypy passed.
-Source suite 303 passed / 119 skipped includes old private-capture regressions.
-No schema or existing records changed. Source clocks must be synchronized.
-Restart API and collectors for new validation. Updated deployment ZIPs must use
-this validation revision; previous recovery bundles lack these additional rules.
+Refresh ZIPs from committed heads, including the new native100 config and both
+coverage guides. Restart API and collectors with the same state directories to load
+changes. Ubuntu units use defaults automatically; laptop pilot commands must change
+registry. Do not reset the native DB. Monitor source failures, freshness, pending
+uploads and DB disk while broad history fills. Quote snapshots are not a tick archive;
+TradingView recovery is limited to available history (up to1440 minutes requested).

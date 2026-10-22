@@ -30,9 +30,11 @@ exact records, corrections and WebSockets use the same service. PostgreSQL retai
 exact decimal strings in JSONB; only the legacy chart response converts to float64.
 
 TradingView collects native 1-minute bars and latest quote snapshots. The default
-99-source registry is provisional; actual availability must be checked. Recovery
+100-source registry is provisional; actual availability must be checked. Recovery
 is limited to the provider's available history (up to 1,440 minutes requested).
-TSETMC supplies native daily history and current Foolad observations. Neither
+TSETMC discovers primary ordinary shares (745 candidates in the latest check),
+with native daily history and paced current-price sweeps. See
+[coverage and instrument list](docs/native-instruments.md). Neither
 transport success nor a configured symbol proves complete or real-time coverage.
 
 [Current state and checks](HANDOFF.md) | [Workspace/checkpoints](docs/workspace.md)
