@@ -2,6 +2,13 @@
 
 ## Purpose
 
+The owner selected the native, simplified installation in `docs/native-install.md`:
+one company PostgreSQL, one FastAPI, direct HTTP collectors and durable retry files.
+Docker and collector databases are optional legacy paths. Open browser/API access
+and an optional shared upload token are explicitly authorized. Preserve precision,
+source identity, timestamps, correction history and retry integrity. Keep the
+original databases and frozen releases intact; native initialization uses a new DB.
+
 This repository implements a reliable multi-asset market-data ingestion and serving platform.
 
 This file contains durable repository-level instructions.

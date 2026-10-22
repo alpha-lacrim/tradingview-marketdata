@@ -1,5 +1,5 @@
-name: project tests
-on: [push, pull_request]
+name: legacy database compatibility (manual)
+on: [workflow_dispatch]
 permissions:
   contents: read
 jobs:

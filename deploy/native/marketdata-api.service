@@ -1,0 +1,15 @@
+[Unit]
+Description=Company market-data FastAPI
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/marketdata/tradingview-marketdata
+EnvironmentFile=%h/marketdata/api.env
+ExecStart=%h/marketdata/tradingview-marketdata/.venv/bin/marketdata-simple serve
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=40
+
+[Install]
+WantedBy=default.target

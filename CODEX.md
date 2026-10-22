@@ -1,5 +1,15 @@
 # CODEX.md
 
+## Current default: native installation
+
+Use `docs/native-install.md` and `docs/native-dashboard.md` for new work. The owner
+requested one native API, one company PostgreSQL database, no collector databases,
+HTTP support and open access by default. `simple_*` modules implement that path;
+older deployment-specific procedures below apply only to the legacy platform.
+Initialize the separate native schema explicitly with `marketdata-simple init`.
+Never initialize it over an old source/company database or change frozen payloads.
+Keep data validation and provider access checks even when authentication is optional.
+
 ## Purpose
 
 This file defines the engineering operating procedure for AI coding agents working in this repository.

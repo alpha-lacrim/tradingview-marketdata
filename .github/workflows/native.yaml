@@ -1,0 +1,35 @@
+name: native installation
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Newly created disposable CI database, never a deployed database.
+      SIMPLE_TEST_DATABASE_URL: postgresql://native_ci:native_ci@127.0.0.1:5432/simple_native_ci_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.27"
+          python-version: "3.12"
+      - run: uv sync --frozen --extra databento --extra collector
+      - name: Install native PostgreSQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql
+          sudo systemctl start postgresql
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE ROLE native_ci LOGIN PASSWORD 'native_ci'"
+          sudo -u postgres createdb --owner=native_ci simple_native_ci_test
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "COMMENT ON DATABASE simple_native_ci_test IS 'native-simple-disposable-tests'"
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest -q
+      - name: Build installable package
+        run: |
+          uv build --wheel
+          uv run marketdata-simple --help
+          uv run tradingview-simple --help

@@ -21,6 +21,8 @@ dependencies = [
 
 [project.scripts]
 marketdata-sync = "marketdata.sync_worker:main"
+marketdata-simple = "marketdata.simple_cli:main"
+tradingview-simple = "marketdata.simple_collector:main"
 
 [project.optional-dependencies]
 collector = ["httpx>=0.28,<1"]

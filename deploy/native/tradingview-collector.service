@@ -1,0 +1,15 @@
+[Unit]
+Description=TradingView native collector
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/marketdata/tradingview-marketdata
+EnvironmentFile=%h/marketdata/collector.env
+ExecStart=%h/marketdata/tradingview-marketdata/.venv/bin/tradingview-simple --state-dir %h/.local/share/marketdata/tradingview
+Restart=on-failure
+RestartSec=60
+TimeoutStopSec=40
+
+[Install]
+WantedBy=default.target
