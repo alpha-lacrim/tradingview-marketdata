@@ -2,6 +2,7 @@
 
 import asyncio
 import hmac
+import logging
 import os
 from collections import defaultdict
 from collections.abc import AsyncIterator
@@ -18,6 +19,8 @@ from pydantic import ValidationError
 
 from marketdata.simple_models import Batch, Market, float64
 from marketdata.simple_store import SimpleStore
+
+logger = logging.getLogger(__name__)
 
 STEPS = {"1m": 60, "5m": 300, "15m": 900, "1h": 3600, "1d": 86400}
 Symbol = Annotated[str, Query(min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_:.-]+$")]
@@ -83,14 +86,23 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
     )
     app.state.store = db
 
+    @app.exception_handler(TimeoutError)
+    @app.exception_handler(OSError)
+    @app.exception_handler(asyncpg.InterfaceError)
     @app.exception_handler(asyncpg.PostgresError)
     async def database_error(request: Request, error: Exception) -> JSONResponse:
-        return JSONResponse({"detail": "database unavailable"}, status_code=503)
+        logger.warning(
+            "database operation failed: %s path=%s", type(error).__name__, request.url.path
+        )
+        return JSONResponse(
+            {"detail": "database unavailable"}, status_code=503, headers={"Retry-After": "30"}
+        )
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
         assert db.pool is not None
-        await db.pool.fetchval("SELECT 1")
+        async with db.connection() as conn:
+            await conn.fetchval("SELECT 1")
         return {"ok": True, "profile": "native", "upload_token_required": bool(token)}
 
     batch_schema = Batch.model_json_schema(ref_template="#/components/schemas/{model}")
@@ -127,11 +139,12 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
     @app.get("/api/instruments")
     async def instruments() -> list[dict[str, Any]]:
         assert db.pool is not None
-        rows = await db.pool.fetch("""SELECT market,symbol,
-            array_agg(DISTINCT interval) AS intervals,
-            max(received_at) AS last_received_at
-            FROM simple_marketdata.records
-            GROUP BY market,symbol ORDER BY market,symbol LIMIT 1000""")
+        async with db.connection() as conn:
+            rows = await conn.fetch("""SELECT market,symbol,
+                array_agg(DISTINCT interval) AS intervals,
+                max(received_at) AS last_received_at
+                FROM simple_marketdata.records
+                GROUP BY market,symbol ORDER BY market,symbol LIMIT 1000""")
         return [dict(r) for r in rows]
 
     async def latest_row(market: str, symbol: str) -> dict[str, Any]:
@@ -217,27 +230,37 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
             return
         await ws.accept()
         assert db.pool is not None
-        cursor = (
-            after
-            if after is not None
-            else int(
-                await db.pool.fetchval("SELECT coalesce(max(id),0) FROM simple_marketdata.changes")
-            )
-        )
         try:
+            async with db.connection() as conn:
+                cursor = (
+                    after
+                    if after is not None
+                    else int(
+                        await conn.fetchval(
+                            "SELECT coalesce(max(id),0) FROM simple_marketdata.changes"
+                        )
+                    )
+                )
             try:
                 snapshot = await latest_row(market, symbol)
             except HTTPException:
                 snapshot = None
-            await ws.send_json({"type": "snapshot", "latest": snapshot, "cursor": cursor})
+            async with asyncio.timeout(10):
+                await ws.send_json({"type": "snapshot", "latest": snapshot, "cursor": cursor})
             while True:
                 rows = await db.changes(cursor, market, symbol)
                 cursor = rows[-1]["id"] if rows else cursor
                 async with asyncio.timeout(10):
                     await ws.send_json({"type": "changes", "items": rows, "cursor": cursor})
                 await asyncio.sleep(1)
-        except (WebSocketDisconnect, TimeoutError, OSError):
+        except WebSocketDisconnect:
             return
+        except (TimeoutError, OSError, asyncpg.PostgresError, asyncpg.InterfaceError):
+            try:
+                async with asyncio.timeout(5):
+                    await ws.close(code=1013, reason="temporarily unavailable; reconnect")
+            except (WebSocketDisconnect, TimeoutError, OSError):
+                pass
 
     app.openapi()["components"]["schemas"].update(definitions)
     return app

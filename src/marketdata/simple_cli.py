@@ -14,6 +14,7 @@ def main() -> None:
     parser.add_argument("command", choices=["init", "serve"])
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--access-log", action="store_true", help="log every HTTP request")
     args = parser.parse_args()
     if args.command == "init":
         url = os.environ.get("DATABASE_URL")
@@ -23,7 +24,11 @@ def main() -> None:
         print("Native market-data tables are ready.")
     else:
         uvicorn.run(
-            "marketdata.simple_api:create_app", factory=True, host=args.host, port=args.port
+            "marketdata.simple_api:create_app",
+            factory=True,
+            host=args.host,
+            port=args.port,
+            access_log=args.access_log,
         )
 
 

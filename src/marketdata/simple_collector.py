@@ -14,11 +14,30 @@ from marketdata.candles import MarketCandle
 from marketdata.config import Settings
 from marketdata.domain import Tick
 from marketdata.observability import Metrics
-from marketdata.providers.base import PermanentProviderError, Subscription
+from marketdata.providers.base import PermanentConnectionError, PermanentProviderError, Subscription
 from marketdata.providers.tradingview import TradingViewGuestProvider
 from marketdata.providers.tradingview_candles import TradingViewCandleProvider
 from marketdata.registry import Registry
-from marketdata.simple_delivery import PendingUpload, single_instance
+from marketdata.simple_delivery import PendingUpload, retry_delay, single_instance
+
+
+def transport_detail(error: Exception) -> str:
+    """Diagnostic codes only; never log response bodies, headers or credentials."""
+    detail = type(error).__name__
+    if isinstance(error, InvalidStatus):
+        detail += f" HTTP {error.response.status_code}"
+    if isinstance(error, ConnectionClosed):
+        detail += f" received_code={getattr(error.rcvd, 'code', None)}"
+        detail += f" sent_code={getattr(error.sent, 'code', None)}"
+    if error.__cause__ is not None:
+        detail += f" cause={type(error.__cause__).__name__}"
+    return detail
+
+
+def transport_delay(error: Exception, minimum: float) -> float:
+    if isinstance(error, InvalidStatus):
+        return retry_delay(error.response.headers.get("Retry-After"), minimum)
+    return minimum
 
 
 def candle_record(bar: MarketCandle, pair: Subscription) -> dict[str, Any]:
@@ -88,9 +107,13 @@ async def run(args: argparse.Namespace) -> None:
         async def candles() -> None:
             last_success: dict[str, datetime] = {}
             last_full: dict[str, datetime] = {}
+            backoff = 60.0
+            concurrency = settings.tradingview_candle_concurrency
             while True:
                 await bars_pending.drain()
+                delay = backoff
                 provider = TradingViewCandleProvider(settings, metrics)
+                provider.effective_concurrency = concurrency
                 await provider.subscribe(pairs)
                 try:
                     await provider.connect()
@@ -112,16 +135,24 @@ async def run(args: argparse.Namespace) -> None:
                         )
                     results = await provider.fetch_many(jobs)
                     failed = 0
+                    empty = 0
+                    delivered = 0
                     for pair in pairs:
                         symbol = pair[0].canonical_symbol
                         bars = results[symbol]
+                        if isinstance(bars, PermanentConnectionError):
+                            raise bars
                         if isinstance(bars, Exception):
                             failed += 1
                             print(
-                                f"history {pair[1].provider_symbol}: {type(bars).__name__}",
+                                f"history {pair[1].provider_symbol}: {transport_detail(bars)}",
                                 flush=True,
                             )
+                            delay = max(delay, transport_delay(bars, backoff))
                             continue
+                        if not bars:
+                            empty += 1
+                        delivered += len(bars)
                         for offset in range(0, len(bars), 500):
                             bars_pending.stage(
                                 [candle_record(b, pair) for b in bars[offset : offset + 500]]
@@ -134,9 +165,15 @@ async def run(args: argparse.Namespace) -> None:
                         ):
                             last_full[symbol] = end
                     print(
-                        f"history cycle: {len(pairs) - failed} succeeded, {failed} failed",
+                        f"history cycle: {len(pairs) - failed} requests succeeded, "
+                        f"{failed} failed; "
+                        f"{delivered} bars delivered, {empty} empty results",
                         flush=True,
                     )
+                    if not failed:
+                        backoff = delay = 60.0
+                    else:
+                        backoff = min(backoff * 2, 300)
                     if args.once and failed:
                         raise RuntimeError(f"history failed for {failed} sources")
                 except PermanentProviderError:
@@ -148,17 +185,25 @@ async def run(args: argparse.Namespace) -> None:
                     InvalidMessage,
                     InvalidStatus,
                 ) as error:
-                    print(f"history transport: {type(error).__name__}; retrying", flush=True)
+                    delay = transport_delay(error, backoff)
+                    backoff = min(backoff * 2, 300)
+                    print(
+                        f"history transport: {transport_detail(error)}; retry in {delay:g}s",
+                        flush=True,
+                    )
                     if args.once:
                         raise
                 finally:
+                    concurrency = min(concurrency, provider.effective_concurrency)
                     await provider.disconnect()
                 if args.once:
                     return
-                await asyncio.sleep(60)
+                await asyncio.sleep(delay)
 
         async def quotes() -> None:
+            backoff = 60.0
             while True:
+                delay = backoff
                 provider = TradingViewGuestProvider(settings, metrics)
                 await provider.subscribe(pairs)
                 try:
@@ -166,13 +211,25 @@ async def run(args: argparse.Namespace) -> None:
                     async for tick in provider.stream_ticks():
                         # Keep one latest snapshot per configured source, not a tick archive.
                         recent[tick.provider_symbol] = tick
+                        backoff = delay = 60.0
                 except PermanentProviderError:
                     raise
-                except Exception as error:
-                    print(f"quote transport: {type(error).__name__}; reconnecting", flush=True)
+                except (
+                    OSError,
+                    TimeoutError,
+                    ConnectionClosed,
+                    InvalidMessage,
+                    InvalidStatus,
+                ) as error:
+                    delay = transport_delay(error, backoff)
+                    print(
+                        f"quote transport: {transport_detail(error)}; reconnect in {delay:g}s",
+                        flush=True,
+                    )
                 finally:
                     await provider.disconnect()
-                await asyncio.sleep(60)
+                await asyncio.sleep(delay)
+                backoff = min(backoff * 2, 300)
 
         async def publish_quotes() -> None:
             while True:

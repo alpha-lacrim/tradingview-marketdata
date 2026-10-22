@@ -271,7 +271,8 @@ def test_upload_schema_is_available_to_dashboard_developers():
     assert "received_at" in schema["components"]["schemas"]["Observation"]["required"]
 
 
-async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path):
+@pytest.mark.parametrize("permanent", [False, True])
+async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path, permanent):
     from types import SimpleNamespace
 
     from marketdata import simple_collector as collector
@@ -292,7 +293,8 @@ async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path):
             pass
 
         async def fetch_many(self, jobs):
-            return {"TEST:ABC": RuntimeError("provider unavailable")}
+            error = collector.PermanentConnectionError if permanent else RuntimeError
+            return {"TEST:ABC": error("provider unavailable")}
 
     monkeypatch.setattr(
         collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: [pair])
@@ -305,13 +307,16 @@ async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path):
         state_dir=tmp_path,
         once=True,
     )
-    with pytest.raises(RuntimeError, match="history failed for 1 sources"):
+    error_type = collector.PermanentConnectionError if permanent else RuntimeError
+    match = "provider unavailable" if permanent else "history failed for 1 sources"
+    with pytest.raises(error_type, match=match):
         await collector.run(args)
 
 
 @pytest.mark.parametrize("once", [False, True])
+@pytest.mark.parametrize("failure_count", [1, 3])
 async def test_history_handshake_eof_retries_without_stopping_collector(
-    monkeypatch, tmp_path, once
+    monkeypatch, tmp_path, once, failure_count
 ):
     import asyncio
     from types import SimpleNamespace
@@ -336,7 +341,8 @@ async def test_history_handshake_eof_retries_without_stopping_collector(
 
         async def connect(self):
             attempts.append(self)
-            if len(attempts) == 1:
+            if len(attempts) <= failure_count:
+                self.effective_concurrency = 1
                 raise InvalidMessage("did not receive a valid HTTP response") from EOFError()
 
         async def disconnect(self):
@@ -391,7 +397,72 @@ async def test_history_handshake_eof_retries_without_stopping_collector(
             assert recovered.is_set()
             assert len(attempts) >= 2 and attempts[0] in closed
             assert 60 in sleeps
+            assert attempts[-1].effective_concurrency == 1
+            if failure_count == 3:
+                assert 120 in sleeps and 240 in sleeps
         finally:
             task.cancel()
             ready.cancel()
             await asyncio.gather(task, ready, return_exceptions=True)
+
+
+@pytest.mark.parametrize("failure", [TimeoutError, OSError, asyncpg.InterfaceError])
+async def test_api_database_failures_return_retryable_503(failure):
+    from contextlib import asynccontextmanager
+
+    class Unavailable(SimpleStore):
+        @asynccontextmanager
+        async def connection(self):
+            raise failure("private connection detail")
+            yield
+
+    store = Unavailable("unused")
+    store.pool = object()
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=store)), base_url="http://company"
+    ) as http:
+        for path in [
+            "/health",
+            "/api/instruments",
+            "/api/latest?market=tradingview&symbol=TEST:ABC",
+        ]:
+            response = await http.get(path)
+            assert response.status_code == 503
+            assert response.json() == {"detail": "database unavailable"}
+            assert response.headers["retry-after"] == "30"
+        assert (await http.get("/openapi.json")).status_code == 200
+
+
+async def test_pool_exhaustion_returns_503_then_recovers(native_store):
+    connections = [await native_store.pool.acquire() for _ in range(10)]
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=native_store)), base_url="http://company"
+    ) as http:
+        try:
+            response = await http.get("/health")
+            assert response.status_code == 503
+        finally:
+            for conn in connections:
+                await native_store.pool.release(conn)
+        assert (await http.get("/health")).status_code == 200
+
+
+def test_websocket_database_failure_closes_for_reconnect():
+    from contextlib import asynccontextmanager
+
+    from fastapi.testclient import TestClient
+    from starlette.websockets import WebSocketDisconnect
+
+    class Unavailable(SimpleStore):
+        @asynccontextmanager
+        async def connection(self):
+            raise TimeoutError()
+            yield
+
+    store = Unavailable("unused")
+    store.pool = object()
+    client = TestClient(create_app(store=store))
+    with client.websocket_connect("/api/ws?market=tradingview&symbol=TEST:ABC") as ws:
+        with pytest.raises(WebSocketDisconnect) as caught:
+            ws.receive_json()
+        assert caught.value.code == 1013

@@ -55,3 +55,32 @@ connection closed, nor solve independent API response timeouts.
 Fix validation: regression 14 passed / 3 database skips; full local suite 528
 passed / 368 skipped, Ruff/format and strict mypy passed. Database, optional
 provider and live tests were not enabled for this transport-only change.
+
+## Native recovery hardening
+
+Both collectors now report upload HTTP/transport causes, pending filenames,
+exponential retry delays (30..300 seconds), recovery, and honor HTTP-date/numeric
+Retry-After even when longer. Bad/non-object receipts and permanent rejections
+retain pending files and fail visibly. The delivery helper copies are identical.
+TradingView preserves reduced concurrency across reconnects, backs off repeated
+failures (60..300 seconds), reports close/cause codes and actual delivered/empty
+bar counts, and stops on provider-wide permanent rejection. Unknown programming
+errors are no longer swallowed by the quote reconnect loop.
+TSETMC drains staged uploads before identity lookup; transient startup lookup
+failures retry while invalid identity/access failures remain fatal.
+
+API database operations have a 20-second budget including a five-second pool
+acquire limit; temporary database/network failures return 503 + Retry-After: 30.
+WebSockets close with 1013 for reconnect. Per-request console access logs are off
+by default (`--access-log` opts in); this reduces Windows terminal traffic but
+cannot guarantee recovery from a paused terminal or unresponsive process.
+No schema, stored quote semantics or chart contract changed.
+
+Validation: full company suite 551 passed / 365 skipped, followed by all 38 native
+recovery tests passing after an additional permanent-rejection case. Ruff/format
+and strict mypy passed. Source suite 281 passed / 119 skipped. An isolated native
+PostgreSQL outage returned HTTP 503 for health/instruments, kept OpenAPI at 200,
+and recovered after DB restart without restarting FastAPI. No live-provider
+outage was induced and the user's running laptop processes were not replaced.
+Restart the API and collectors to load these changes. Updated ZIPs must be built
+from these commits, not the earlier native or handshake-only checkpoints.

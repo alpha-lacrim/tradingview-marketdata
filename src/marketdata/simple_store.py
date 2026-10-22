@@ -1,7 +1,12 @@
 """One PostgreSQL database, atomic uploads, retry receipts and correction history."""
 
+from __future__ import annotations
+
+import asyncio
 import hashlib
 import json
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from importlib.resources import files
 from typing import Any
 
@@ -22,7 +27,7 @@ AND (excluded.interval <> 'quote' OR excluded.data->>'event_at' IS NULL
 
 
 async def initialize(url: str) -> None:
-    conn = await asyncpg.connect(url)
+    conn = await asyncpg.connect(url, timeout=10, command_timeout=20)
     try:
         async with conn.transaction():
             # Initialization is explicit and refuses legacy storage, including source databases.
@@ -42,9 +47,18 @@ class SimpleStore:
         self.pool: asyncpg.Pool[Any] | None = None
 
     async def connect(self) -> None:
-        self.pool = await asyncpg.create_pool(self.url, min_size=1, max_size=10, command_timeout=30)
+        self.pool = await asyncpg.create_pool(
+            self.url, min_size=1, max_size=10, command_timeout=20, timeout=10
+        )
         if await self.pool.fetchval("SELECT version FROM simple_marketdata.version") != 1:
             raise RuntimeError("run marketdata-simple init for this database")
+
+    @asynccontextmanager
+    async def connection(self) -> AsyncIterator[asyncpg.pool.PoolConnectionProxy[Any]]:
+        assert self.pool is not None
+        # Bound pool contention and the whole operation, not only individual SQL calls.
+        async with asyncio.timeout(20), self.pool.acquire(timeout=5) as conn:
+            yield conn
 
     async def close(self) -> None:
         if self.pool:
@@ -53,7 +67,7 @@ class SimpleStore:
     async def ingest(self, batch: Batch, raw: bytes) -> dict[str, Any]:
         assert self.pool is not None
         digest = hashlib.sha256(raw).hexdigest()
-        async with self.pool.acquire() as conn, conn.transaction():
+        async with self.connection() as conn, conn.transaction():
             # One transaction order also makes WebSocket change IDs safe replay cursors.
             await conn.execute("SELECT pg_advisory_xact_lock(18617432,1)")
             existing = await conn.fetchrow(
@@ -95,29 +109,32 @@ class SimpleStore:
         self, market: str, symbol: str, interval: str, start: int, end: int, limit: int
     ) -> list[dict[str, Any]]:
         assert self.pool is not None
-        records = await self.pool.fetch(
-            """SELECT * FROM simple_marketdata.records
-            WHERE market=$1 AND symbol=$2 AND interval=$3 AND time >= $4 AND time < $5
-            ORDER BY time LIMIT $6""",
-            market,
-            symbol,
-            interval,
-            start,
-            end,
-            limit,
-        )
+        async with self.connection() as conn:
+            records = await conn.fetch(
+                """SELECT * FROM simple_marketdata.records
+                WHERE market=$1 AND symbol=$2 AND interval=$3 AND time >= $4 AND time < $5
+                ORDER BY time LIMIT $6""",
+                market,
+                symbol,
+                interval,
+                start,
+                end,
+                limit,
+            )
         return [unpack(r) for r in records]
 
     async def changes(self, after: int, market: str, symbol: str) -> list[dict[str, Any]]:
         assert self.pool is not None
-        rows = await self.pool.fetch(
-            """SELECT id,market,symbol,interval,time,received_at,
-            stored_at,data FROM simple_marketdata.changes WHERE id>$1 AND market=$2 AND symbol=$3
-            ORDER BY id LIMIT 500""",
-            after,
-            market,
-            symbol,
-        )
+        async with self.connection() as conn:
+            rows = await conn.fetch(
+                """SELECT id,market,symbol,interval,time,received_at,
+                stored_at,data FROM simple_marketdata.changes
+                WHERE id>$1 AND market=$2 AND symbol=$3
+                ORDER BY id LIMIT 500""",
+                after,
+                market,
+                symbol,
+            )
         return [unpack(r) for r in rows]
 
 

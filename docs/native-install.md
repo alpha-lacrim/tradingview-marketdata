@@ -86,7 +86,8 @@ snapshots approximately every five seconds; this is not an archive of every tick
 
 `--once` sends one history cycle and exits, reporting provider failures as errors.
 Normal operation retries connection closures and incomplete WebSocket HTTP
-handshakes after a 60-second pause; provider access rejections remain fatal.
+handshakes with 60-second backoff, increasing to five minutes on repeated
+failures. Longer Retry-After values are honored; access rejections remain fatal.
 The default pending-file directory is `.local/simple-tradingview/`; `--state-dir`
 selects another durable directory. Only one collector may own a given directory.
 If uploads fail, the pending batch stays on disk and new history acquisition waits.
@@ -197,3 +198,34 @@ and retain pending upload files. Pull `main`, repeat `uv sync --frozen --no-dev`
 (with `--extra collector` in the TradingView repository), then restart the units.
 The native tables retain correction history and receipts; monitor database disk
 usage. There is no automatic deletion of your historical data.
+
+## Failure handling and troubleshooting
+
+Uploads retain the exact pending batch until a matching receipt arrives. Transient
+network errors, HTTP 408/429 and server 5xx responses retry after 30 seconds,
+doubling up to five minutes. A longer numeric or HTTP-date Retry-After is honored.
+Logs identify the failure type/status, pending filename, retry delay and recovery.
+Do not delete pending files. Bad receipts and permanent upload rejections stop
+rather than silently discarding data; check the API URL/token/schema and restart
+with the same state directory after resolving the cause.
+
+If the API stops responding on Windows, press Esc in its terminal to clear any
+console text selection, then check /health and /openapi.json. Selection can block
+console output; it is not the only possible cause of a hang. HTTP access logging
+is off by default to reduce terminal output; enable `marketdata-simple serve
+--access-log` when diagnosing requests. Startup and error logs remain enabled.
+Database pool waits are bounded at five seconds and native database operations at
+20 seconds. Handled database/network/timeouts return HTTP 503 with Retry-After: 30.
+An unresponsive process/network can still time out without returning JSON.
+WebSockets close with code 1013 on temporary database failures; reconnect with
+the last processed cursor. These changes do not alter the chart response format.
+
+TradingView logs distinguish completed requests, delivered bars and empty results.
+A successful empty request is not proof of history coverage. Connection-close
+codes and cause types are reported without raw response contents. Reduced history
+concurrency survives reconnects; a fresh process starts at its configured limit.
+Unexpected programming errors remain visible rather than being hidden by retries.
+
+TSETMC retries temporary network/DNS/timeout/server failures during its initial
+identity lookup. It drains already staged uploads first. Invalid identities and
+access-denied responses still stop; it never bypasses source qualification.
