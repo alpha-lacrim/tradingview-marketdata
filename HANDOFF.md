@@ -26,13 +26,14 @@ is a frozen snapshot, not automatic rotation. Raw ranking/directory/probe output
 are ignored under .local/expansion-20261022/. scripts/prepare_native_universe.py
 rebuilds the list from private snapshots. Previous identity UUIDs are preserved.
 
-Companion TSETMC native default discovers primary shares (745 candidates in a
-3,462-row market-watch snapshot), qualifies metadata individually and uses the
-existing daily/current endpoints. Four sampled families passed source parsing;
-not all 745 are live-qualified. The bulk endpoint has zero date/price placeholders
-and is used only for discovery. Pacing means broad latest sweeps take minutes,
-not 15 seconds. Per-instrument full-history refresh is daily, with durable success
-checkpoints; a smaller explicit --ins-code watchlist has better freshness.
+Companion TSETMC now defaults to a fixed packaged top100 share watchlist, selected
+by reported traded value from a dated market-watch snapshot. Startup does not depend
+on market watch. --all-shares explicitly selects the older broad discovery mode.
+Remove that flag from laptop commands. See source docs/top100.md for the named list
+and live checks. Source identity validation, durable retries and daily full-history
+completion checkpoints remain. A100-share latest sweep takes at least100 seconds
+with one request start/second pacing, longer during metadata/history work or failures.
+No company schema/API change was required for this default-watchlist correction.
 
 /api/instruments now accepts market, limit (1..5000, default1000), offset and adds
 latest quote metadata display_name (otherwise symbol). Paging prevents silent loss

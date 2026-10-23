@@ -32,7 +32,7 @@ exact decimal strings in JSONB; only the legacy chart response converts to float
 TradingView collects native 1-minute bars and latest quote snapshots. The default
 100-source registry is provisional; actual availability must be checked. Recovery
 is limited to the provider's available history (up to 1,440 minutes requested).
-TSETMC discovers primary ordinary shares (745 candidates in the latest check),
+TSETMC defaults to a fixed 100-share watchlist without live discovery,
 with native daily history and paced current-price sweeps. See
 [coverage and instrument list](docs/native-instruments.md). Neither
 transport success nor a configured symbol proves complete or real-time coverage.

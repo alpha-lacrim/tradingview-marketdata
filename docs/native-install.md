@@ -109,14 +109,17 @@ export COMPANY_API_URL='http://SERVER:8000'
 uv run --no-sync tsetmc-simple
 ```
 
-No PostgreSQL or company DB credentials are needed here. The default discovers
-primary ordinary shares (745 candidates in the latest TSETMC capture), verifies
-metadata per instrument, and collects current observations and native daily history.
+No PostgreSQL or company DB credentials are needed here. The default loads a fixed
+100-share TSETMC watchlist bundled with the source package. It does not depend on
+market-watch discovery, which can return an empty list. Each instrument metadata
+response is still verified before collecting current prices and native daily history.
+Remove `--all-shares` from older commands to select the fixed list. That flag remains
+an optional broader live-discovery mode.
 Use repeated `--ins-code` arguments for a smaller watchlist, e.g.
 `--ins-code 46348559193224090` retains Foolad-only operation.
 
 The client shares paced requests across both streams. Latest sweeps take minutes
-for hundreds of instruments, followed by `--poll-seconds` (15 seconds by default).
+for 100 instruments (at least about 100 seconds), followed by `--poll-seconds` (15 seconds by default).
 Full history refreshes per instrument every `--history-seconds` (86400 by default);
 acknowledged history completion survives restarts. `--once` forces one full pass.
 Malformed history skips that instrument visibly; unrelated instruments continue.

@@ -50,9 +50,14 @@ proof of it. Private reports are under `.local/expansion-20261022/`.
 This short check does not guarantee sustained availability, complete history or
 permission beyond the existing access gates. The guest protocol remains experimental.
 
-## TSETMC: broad primary-share discovery
+## TSETMC: fixed top100 default; optional broader discovery
 
-The companion native collector discovers primary ordinary-share IDs from the official
+The companion collector now defaults to a packaged fixed100 watchlist, selected by
+reported traded value from a dated snapshot, not an official index. Default startup
+does not call market watch, which can return empty responses. See the source repo
+`docs/top100.md` for the named list and checks. Remove `--all-shares` from old commands.
+
+Optional `--all-shares` discovers primary ordinary-share IDs from the official
 `ClosingPrice/GetMarketWatch` response at startup, then verifies each metadata response
 and uses the existing per-instrument history/current endpoints. The capture held 3,462
 rows across many products; 745 primary-share candidates matched the explicit selection.
