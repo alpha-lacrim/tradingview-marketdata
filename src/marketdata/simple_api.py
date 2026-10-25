@@ -61,6 +61,25 @@ def chart(rows: list[dict[str, Any]], step: int) -> tuple[dict[str, Any], int, i
     return output, missing, placeholders
 
 
+def coverage(rows: list[dict[str, Any]], start: int, end: int, native_step: int) -> dict[str, Any]:
+    cursor = (start + native_step - 1) // native_step * native_step
+    stop = (end + native_step - 1) // native_step * native_step
+    gaps = []
+    for row in rows:
+        if row["time"] > cursor:
+            gaps.append({"start": cursor, "end": row["time"]})
+        cursor = row["time"] + native_step
+    if cursor < stop:
+        gaps.append({"start": cursor, "end": stop})
+    return dict(
+        stored_bars=len(rows),
+        unobserved_ranges=gaps,
+        completeness="unverified",
+        native_step_seconds=native_step,
+        note="Unobserved slots may be closures or missing data; session calendar unknown.",
+    )
+
+
 def create_app(database_url: str | None = None, *, store: SimpleStore | None = None) -> FastAPI:
     url = database_url or os.environ.get("DATABASE_URL", "")
     if not url and store is None:
@@ -82,7 +101,12 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
-        expose_headers=["X-Missing-OHLC", "X-Zero-Placeholders"],
+        expose_headers=[
+            "X-Missing-OHLC",
+            "X-Zero-Placeholders",
+            "X-Partial-Buckets",
+            "X-Coverage-Status",
+        ],
     )
     app.state.store = db
 
@@ -209,6 +233,27 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
             ) from None
         response.headers["X-Missing-OHLC"] = str(missing)
         response.headers["X-Zero-Placeholders"] = str(placeholders)
+        counts: dict[int, int] = defaultdict(int)
+        for row in rows:
+            if all(row["data"][key] is not None for key in ("open", "close", "high", "low")):
+                counts[row["time"] // STEPS[interval]] += 1
+        expected = STEPS[interval] // (86400 if market == "tsetmc" else 60)
+        response.headers["X-Partial-Buckets"] = str(sum(n < expected for n in counts.values()))
+        response.headers["X-Coverage-Status"] = "unverified"
+        return result
+
+    @app.get("/api/coverage")
+    async def history_coverage(
+        market: Market, symbol: Symbol, start: int, end: int
+    ) -> dict[str, Any]:
+        if not 0 <= start < end <= 32503680000:
+            raise HTTPException(422, "use start < end in Unix seconds")
+        native = "1d" if market == "tsetmc" else "1m"
+        rows = await db.rows(market, symbol, native, start, end, 100001)
+        if len(rows) > 100000:
+            raise HTTPException(413, "request a shorter range")
+        result = coverage(rows, start, end, 86400 if market == "tsetmc" else 60)
+        result["collector_max_recovery_minutes"] = 1440 if market == "tradingview" else None
         return result
 
     @app.get("/api/records")

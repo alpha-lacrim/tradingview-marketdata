@@ -93,3 +93,25 @@ local integrity policy; older event times remain valid. Keep collector clocks
 synchronized. Current metadata labels the source-reported Tehran dEven/hEven
 clock and includes the source instrument state, without inferring market sessions
 or real-time status. State and recent HTTP receipt alone do not prove a new trade.
+
+## Coverage and quote ordering
+
+`GET /api/coverage?market=tradingview&symbol=BINANCE:BTCUSDT&start=1792800000&end=1792886400`
+reports stored native bar count and unobserved time ranges for the requested
+[start,end) range. Boundaries identify native UTC slots (60 seconds or 86400
+seconds); ranges are end-exclusive. No exchange calendar is inferred: absent
+slots may be closures or missing data. `completeness` remains `unverified`.
+The native TradingView collector's maximum recovery window is 1440 minutes;
+a smaller configured window is possible. This endpoint reports coverage only,
+not a backfill job. Older gaps/corrections need a separately qualified source.
+
+Chart JSON stays unchanged. `X-Partial-Buckets` counts returned buckets with
+fewer usable native OHLC rows than a full interval. This includes query edges,
+ongoing candles and legitimate source omissions, not just collection failures.
+`X-Coverage-Status: unverified` prevents interpreting returned candles as proof
+of complete history. Both headers are exposed to browser clients through CORS.
+
+A quote without a source event timestamp cannot replace an already dated quote.
+It can be stored initially if no dated quote exists. Older source timestamps
+also cannot replace newer ones. `/api/latest` remains the latest accepted stored
+observation, not an on-demand provider request. Check its event and receipt ages.

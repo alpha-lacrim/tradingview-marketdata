@@ -242,6 +242,12 @@ async def test_latest_never_regresses_event_time_and_token_is_optional(native_st
         await http.post("/api/ingest", content=body([quote]), headers=headers)
         latest = (await http.get("/api/latest", params=dict(market="tsetmc", symbol="123"))).json()
         assert latest["data"]["last"] == "42" and latest["data"]["official_close"] == "43"
+        quote.update(received_at=(now + timedelta(seconds=2)).isoformat(), event_at=None)
+        await http.post("/api/ingest", content=body([quote]), headers=headers)
+        preserved = (
+            await http.get("/api/latest", params=dict(market="tsetmc", symbol="123"))
+        ).json()
+        assert preserved["data"]["last"] == "42"
         assert latest["source_age_seconds"] >= 86400
         assert latest["receive_age_seconds"] < 5
 
@@ -545,3 +551,37 @@ async def test_instrument_directory_pages_and_names(native_store):
         assert [r["symbol"] for r in tail] == ["11000", "11001"]
         assert (await http.get("/api/instruments?market=tradingview")).json() == []
         assert (await http.get("/api/instruments?offset=-1")).status_code == 422
+
+
+def test_coverage_reports_absence_without_inventing_market_sessions():
+    from marketdata.simple_api import coverage
+
+    result = coverage([{"time": 60}, {"time": 180}], 0, 300, 60)
+    assert result["unobserved_ranges"] == [
+        {"start": 0, "end": 60},
+        {"start": 120, "end": 180},
+        {"start": 240, "end": 300},
+    ]
+    assert result["completeness"] == "unverified"
+    assert coverage([], 1, 59, 60)["unobserved_ranges"] == []
+
+
+async def test_chart_partial_bucket_and_coverage_api(native_store):
+    row = observation()
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=native_store)), base_url="http://company"
+    ) as http:
+        assert (await http.post("/api/ingest", content=body([row]))).status_code == 200
+        params = dict(
+            market=row["market"], symbol=row["symbol"], start=row["time"], end=row["time"] + 300
+        )
+        response = await http.get("/api/chart", params=dict(params, interval="5m"))
+        assert response.status_code == 200
+        assert response.headers["X-Partial-Buckets"] == "1"
+        response = await http.get("/api/coverage", params=params)
+        assert response.status_code == 200
+        result = response.json()
+        assert result["stored_bars"] == 1
+        assert result["unobserved_ranges"] == [
+            {"start": row["time"] + 60, "end": row["time"] + 300}
+        ]

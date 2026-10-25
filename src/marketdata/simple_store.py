@@ -20,8 +20,7 @@ VALUES($1,$2,$3,$4,$5,$6::jsonb)
 ON CONFLICT(market,symbol,interval,time) DO UPDATE
 SET received_at=excluded.received_at, data=excluded.data, stored_at=clock_timestamp()
 WHERE excluded.received_at > old.received_at
-AND (excluded.interval <> 'quote' OR excluded.data->>'event_at' IS NULL
-     OR old.data->>'event_at' IS NULL
+AND (excluded.interval <> 'quote' OR old.data->>'event_at' IS NULL
      OR (excluded.data->>'event_at')::timestamptz >= (old.data->>'event_at')::timestamptz)
 """
 

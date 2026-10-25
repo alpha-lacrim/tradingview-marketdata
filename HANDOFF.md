@@ -72,3 +72,19 @@ changes. Ubuntu units use defaults automatically; laptop pilot commands must cha
 registry. Do not reset the native DB. Monitor source failures, freshness, pending
 uploads and DB disk while broad history fills. Quote snapshots are not a tick archive;
 TradingView recovery is limited to available history (up to1440 minutes requested).
+
+## Reliability follow-up (2026-10-25)
+
+Undated incoming quotes no longer replace dated stored quotes. New /api/coverage
+reports unobserved native slots without inferring sessions; chart adds exposed
+partial-bucket and unverified-coverage headers, preserving its JSON body.
+TradingView recovery remains capped at 1440 minutes; long-outage backfill is not
+solved. Owner accepts paced TSETMC latest observations rather than instantaneous
+provider snapshots. Companion collector now retries empty history next sweep
+instead of checkpointing it for a day. No schema migration required.
+
+Verification: company full suite 567 passed, 365 skipped (opt-in legacy/live
+paths); native API/store suite 38 passed against disposable PostgreSQL 16.1 on
+port 56052, including quote ordering and coverage response tests. Ruff and mypy
+passed. Graph rebuilt (SQL extraction unavailable: missing optional parser).
+This does not qualify employer deployment or prove uninterrupted live feeds.
