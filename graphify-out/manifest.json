@@ -2718,15 +2718,15 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792693136.113928,
-    "seen": 1792693168.9235728,
-    "ast_hash": "aec276d777ece5b8dbb1bbfd1f07ac07",
+    "mtime": 1792940872.074149,
+    "seen": 1792940914.772866,
+    "ast_hash": "fdb00320e8614f779678e49603ac8030",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792693136.113928,
-    "seen": 1792693168.9235728,
-    "ast_hash": "4b374879712935c2e4fd7b7e039af258",
+    "mtime": 1792694051.8605893,
+    "seen": 1792940914.772866,
+    "ast_hash": "17b41f53df38607dadae4c460408020d",
     "semantic_hash": ""
   },
   "compose.api.yaml": {
@@ -3522,9 +3522,9 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_api.py": {
-    "mtime": 1792692762.41688,
-    "seen": 1792693168.8971791,
-    "ast_hash": "8ecc5fd8de05943ba9cafa64d6b9eaca",
+    "mtime": 1792940801.803255,
+    "seen": 1792940914.7494593,
+    "ast_hash": "d32ac967660249e52132c2834c49e956",
     "semantic_hash": ""
   },
   "src/marketdata/simple_cli.py": {
@@ -3552,15 +3552,15 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_store.py": {
-    "mtime": 1792672296.29401,
-    "seen": 1792672727.8114657,
-    "ast_hash": "09bd22b2b8a439867073e9197e56b246",
+    "mtime": 1792940599.9317398,
+    "seen": 1792940914.7500184,
+    "ast_hash": "91f47e6db89b1822c235e8efedc18bb5",
     "semantic_hash": ""
   },
   "tests/test_simple_native.py": {
-    "mtime": 1792692762.4182148,
-    "seen": 1792693168.921553,
-    "ast_hash": "2ec409288b3b59e014c5d0914da32393",
+    "mtime": 1792940801.8037796,
+    "seen": 1792940914.7698586,
+    "ast_hash": "db3a67a40b2353dc93cfe561767cf2cb",
     "semantic_hash": ""
   },
   ".github/workflows/native.yaml": {
@@ -3576,15 +3576,15 @@
     "semantic_hash": ""
   },
   "docs/native-dashboard.md": {
-    "mtime": 1792692917.8187647,
-    "seen": 1792693168.9495966,
-    "ast_hash": "cf5fa8b372c6912e15d4b656add8b243",
+    "mtime": 1792940872.074149,
+    "seen": 1792940914.7901855,
+    "ast_hash": "1f742c6b07996bbd900e22d0c86c0324",
     "semantic_hash": ""
   },
   "docs/native-install.md": {
-    "mtime": 1792692917.8187647,
-    "seen": 1792693168.9495966,
-    "ast_hash": "a68abd69cfb0d4e8bebd5c4566224f2f",
+    "mtime": 1792694051.8600829,
+    "seen": 1792940914.7901855,
+    "ast_hash": "cadc4e3fa9bbb9526d9cf99184acb63b",
     "semantic_hash": ""
   },
   "docs/history/handoff-before-native-install.md": {
@@ -3612,9 +3612,9 @@
     "semantic_hash": ""
   },
   "docs/native-instruments.md": {
-    "mtime": 1792693003.019911,
-    "seen": 1792693168.9495966,
-    "ast_hash": "b0ee4d8ea1da2b8e9d9b8be813078bef",
+    "mtime": 1792694051.8610926,
+    "seen": 1792940914.7901855,
+    "ast_hash": "583658c3a81baff9ac944249ec7fd74d",
     "semantic_hash": ""
   }
 }
