@@ -82,7 +82,8 @@ for example `BINANCE:BTCUSDT`, `OANDA:EURUSD` and `FX:EURUSD` remain distinct.
 
 The collector fetches completed native 1-minute bars, revisits recent bars for
 corrections, and refreshes its available history hourly. Initial/restart recovery
-requests up to 1,440 minutes; `--history-minutes` can reduce that bound. Upstream
+requests up to 4,999 minutes (83 hours 19 minutes); `--history-minutes` can reduce
+that bound, for example `--history-minutes 1440` restores the old window. Upstream
 omissions and history beyond this horizon are not synthesized. Persisted company
 history accumulates over time. Quotes use a separate stream and send latest
 snapshots approximately every five seconds; this is not an archive of every tick.
@@ -95,6 +96,10 @@ The default pending-file directory is `.local/simple-tradingview/`; `--state-dir
 selects another durable directory. Only one collector may own a given directory.
 If uploads fail, the pending batch stays on disk and new history acquisition waits.
 An outage longer than the available provider history can leave an unrecoverable gap.
+The native default requests at most 5,000 bars, reserving one for the forming minute.
+Requests use a 30-second timeout and groups of ten sources to bound recovery memory.
+This is a request window, not a guarantee that every source has all those minutes.
+Restart the collector to use the new default; an explicit --history-minutes overrides it.
 
 ## 3. Start TSETMC
 

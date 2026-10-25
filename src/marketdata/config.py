@@ -10,6 +10,9 @@ from marketdata.registry import Registry
 
 ProviderName = Literal["mock", "binance", "oanda", "databento", "tradingview_guest", "disabled"]
 
+# Leave one of the 5000 requested bars for the possibly forming minute.
+MAX_HISTORY_MINUTES = 4999
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
@@ -86,7 +89,7 @@ class Settings(BaseSettings):
     tradingview_production_access_approved: bool = True
     candle_interval: Literal["1m"] = "1m"
     candle_fetch_grace_seconds: float = Field(default=2, ge=0, le=30)
-    candle_backfill_minutes: int = Field(default=300, ge=3, le=1440)
+    candle_backfill_minutes: int = Field(default=300, ge=3, le=MAX_HISTORY_MINUTES)
     candle_correction_lookback_minutes: int = Field(default=3, ge=1, le=30)
     candle_request_timeout_seconds: float = Field(default=15, ge=1, le=60)
     tradingview_candle_concurrency: int = Field(default=2, ge=1, le=12)

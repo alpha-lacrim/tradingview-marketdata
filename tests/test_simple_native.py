@@ -566,6 +566,55 @@ def test_coverage_reports_absence_without_inventing_market_sessions():
     assert coverage([], 1, 59, 60)["unobserved_ranges"] == []
 
 
+async def test_extended_history_is_bounded_and_split_into_small_requests(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    from marketdata import simple_collector as collector
+    from marketdata.config import MAX_HISTORY_MINUTES, Settings
+
+    assert Settings(_env_file=None, candle_backfill_minutes=4999).candle_backfill_minutes == 4999
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, candle_backfill_minutes=5000)
+    pairs = [
+        (SimpleNamespace(canonical_symbol=str(i)), SimpleNamespace(provider_symbol=str(i)))
+        for i in range(23)
+    ]
+    batches = []
+
+    class Provider:
+        async def subscribe(self, pairs):
+            pass
+
+        async def connect(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+        async def fetch_many(self, jobs):
+            batches.append(jobs)
+            return {pair[0].canonical_symbol: [] for pair, _, _, _ in jobs}
+
+    monkeypatch.setattr(
+        collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: pairs)
+    )
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_: Provider())
+    await collector.run(
+        SimpleNamespace(
+            registry=None,
+            history_minutes=MAX_HISTORY_MINUTES,
+            api_url="http://localhost:8000",
+            state_dir=tmp_path,
+            once=True,
+        )
+    )
+    assert [len(batch) for batch in batches] == [10, 10, 3]
+    for batch in batches:
+        for _, start, end, count in batch:
+            assert end - start == timedelta(minutes=4999)
+            assert count == 5000
+
+
 async def test_chart_partial_bucket_and_coverage_api(native_store):
     row = observation()
     async with httpx.AsyncClient(

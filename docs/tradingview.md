@@ -290,7 +290,7 @@ same verified type. TVC oil supplies a sixth numeric field but no verified volum
 
 Validated settings: `TRADINGVIEW_STORAGE_MODE=candles|ticks` (default candles),
 `CANDLE_INTERVAL=1m`, `CANDLE_FETCH_GRACE_SECONDS=2` (0..30),
-`CANDLE_BACKFILL_MINUTES=300` (3..1440), `CANDLE_CORRECTION_LOOKBACK_MINUTES=3` (1..30,
+`CANDLE_BACKFILL_MINUTES=300` (3..4999), `CANDLE_CORRECTION_LOOKBACK_MINUTES=3` (1..30,
 no larger than recovery horizon), `CANDLE_REQUEST_TIMEOUT_SECONDS=15` (1..60).
 `TRADINGVIEW_CANDLE_CONCURRENCY=2` bounds outstanding requests (1..12), with one socket
 and one series per temporary chart session. `CANDLE_CYCLE_SAFETY_MARGIN_SECONDS=10`
@@ -571,3 +571,16 @@ refused; retain them. Windows cap at one day and one million observations. The e
 retained. Verify results and refresh affected old continuous aggregates manually after a
 permitted deletion. Deletion was tested only on a disposable test database; no live user
 history was deleted in this implementation.
+
+### Deeper native recovery verification (2026-10-25)
+
+[TradingView's intraday history guide](https://www.tradingview.com/support/solutions/43000480679-historical-intraday-data-bars-and-limits-explained/)
+documents a baseline 5000-bar chart limit. It is not a supported guest API contract.
+The native collector requests at most that count, without pagination around access
+limits. Current probes accepted 4999 completed BTC one-minute candles and more than
+24-hour-old EURUSD candles from both OANDA and FXCM. Availability still varies.
+Our previous 256 KiB candle transport cap caused local close1009 on larger replies;
+candle framing now allows 2 MiB while quote framing remains unchanged. Native
+requests use 30s deadlines. No account credentials, replay access or alternate
+price source was introduced. Historical company records continue accumulating;
+4999 minutes limits retrieval, not database retention.

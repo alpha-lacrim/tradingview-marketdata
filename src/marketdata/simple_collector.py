@@ -11,7 +11,7 @@ import httpx
 from websockets.exceptions import ConnectionClosed, InvalidMessage, InvalidStatus
 
 from marketdata.candles import MarketCandle
-from marketdata.config import Settings
+from marketdata.config import MAX_HISTORY_MINUTES, Settings
 from marketdata.domain import Tick
 from marketdata.observability import Metrics
 from marketdata.providers.base import PermanentConnectionError, PermanentProviderError, Subscription
@@ -92,6 +92,7 @@ async def run(args: argparse.Namespace) -> None:
         _env_file=None,  # type: ignore[call-arg]
         candle_backfill_minutes=args.history_minutes,
         tradingview_candle_concurrency=2,
+        candle_request_timeout_seconds=30,
     )
     metrics = Metrics()
     headers = (
@@ -133,37 +134,38 @@ async def run(args: argparse.Namespace) -> None:
                         jobs.append(
                             (pair, start, end, int((end - start).total_seconds() // 60) + 1)
                         )
-                    results = await provider.fetch_many(jobs)
-                    failed = 0
-                    empty = 0
-                    delivered = 0
-                    for pair in pairs:
-                        symbol = pair[0].canonical_symbol
-                        bars = results[symbol]
-                        if isinstance(bars, PermanentConnectionError):
-                            raise bars
-                        if isinstance(bars, Exception):
-                            failed += 1
-                            print(
-                                f"history {pair[1].provider_symbol}: {transport_detail(bars)}",
-                                flush=True,
-                            )
-                            delay = max(delay, transport_delay(bars, backoff))
-                            continue
-                        if not bars:
-                            empty += 1
-                        delivered += len(bars)
-                        for offset in range(0, len(bars), 500):
-                            bars_pending.stage(
-                                [candle_record(b, pair) for b in bars[offset : offset + 500]]
-                            )
-                            await bars_pending.drain()
-                        last_success[symbol] = end
-                        if (
-                            symbol not in last_full
-                            or (end - last_full[symbol]).total_seconds() >= 3600
-                        ):
-                            last_full[symbol] = end
+                    failed = empty = delivered = 0
+                    # Bound recovery memory: do not retain 5000 bars for all 100 sources.
+                    for offset in range(0, len(jobs), 10):
+                        batch = jobs[offset : offset + 10]
+                        results = await provider.fetch_many(batch)
+                        for pair, _, _, _ in batch:
+                            symbol = pair[0].canonical_symbol
+                            bars = results[symbol]
+                            if isinstance(bars, PermanentConnectionError):
+                                raise bars
+                            if isinstance(bars, Exception):
+                                failed += 1
+                                print(
+                                    f"history {pair[1].provider_symbol}: {transport_detail(bars)}",
+                                    flush=True,
+                                )
+                                delay = max(delay, transport_delay(bars, backoff))
+                                continue
+                            if not bars:
+                                empty += 1
+                            delivered += len(bars)
+                            for offset in range(0, len(bars), 500):
+                                bars_pending.stage(
+                                    [candle_record(b, pair) for b in bars[offset : offset + 500]]
+                                )
+                                await bars_pending.drain()
+                            last_success[symbol] = end
+                            if (
+                                symbol not in last_full
+                                or (end - last_full[symbol]).total_seconds() >= 3600
+                            ):
+                                last_full[symbol] = end
                     print(
                         f"history cycle: {len(pairs) - failed} requests succeeded, "
                         f"{failed} failed; "
@@ -259,11 +261,11 @@ def main() -> None:
         default=Path("config/instruments.tradingview-native100.json"),
     )
     parser.add_argument("--state-dir", type=Path, default=Path(".local/simple-tradingview"))
-    parser.add_argument("--history-minutes", type=int, default=1440)
+    parser.add_argument("--history-minutes", type=int, default=MAX_HISTORY_MINUTES)
     parser.add_argument("--once", action="store_true", help="upload one history cycle and exit")
     args = parser.parse_args()
-    if not 30 <= args.history_minutes <= 1440:
-        parser.error("history-minutes must be 30..1440 (native provider recovery horizon)")
+    if not 30 <= args.history_minutes <= MAX_HISTORY_MINUTES:
+        parser.error(f"history-minutes must be 30..{MAX_HISTORY_MINUTES}")
     with single_instance(args.state_dir):
         try:
             asyncio.run(run(args))

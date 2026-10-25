@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from marketdata.config import MAX_HISTORY_MINUTES
 from marketdata.simple_models import Batch, Market, float64
 from marketdata.simple_store import SimpleStore
 
@@ -253,7 +254,9 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         if len(rows) > 100000:
             raise HTTPException(413, "request a shorter range")
         result = coverage(rows, start, end, 86400 if market == "tsetmc" else 60)
-        result["collector_max_recovery_minutes"] = 1440 if market == "tradingview" else None
+        result["collector_max_recovery_minutes"] = (
+            MAX_HISTORY_MINUTES if market == "tradingview" else None
+        )
         return result
 
     @app.get("/api/records")

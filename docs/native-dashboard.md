@@ -101,7 +101,7 @@ reports stored native bar count and unobserved time ranges for the requested
 [start,end) range. Boundaries identify native UTC slots (60 seconds or 86400
 seconds); ranges are end-exclusive. No exchange calendar is inferred: absent
 slots may be closures or missing data. `completeness` remains `unverified`.
-The native TradingView collector's maximum recovery window is 1440 minutes;
+The native TradingView collector's maximum recovery window is 4999 minutes;
 a smaller configured window is possible. This endpoint reports coverage only,
 not a backfill job. Older gaps/corrections need a separately qualified source.
 

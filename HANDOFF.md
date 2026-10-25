@@ -71,15 +71,15 @@ coverage guides. Restart API and collectors with the same state directories to l
 changes. Ubuntu units use defaults automatically; laptop pilot commands must change
 registry. Do not reset the native DB. Monitor source failures, freshness, pending
 uploads and DB disk while broad history fills. Quote snapshots are not a tick archive;
-TradingView recovery is limited to available history (up to1440 minutes requested).
+TradingView recovery is limited to available history (up to4999 minutes requested).
 
 ## Reliability follow-up (2026-10-25)
 
 Undated incoming quotes no longer replace dated stored quotes. New /api/coverage
 reports unobserved native slots without inferring sessions; chart adds exposed
 partial-bucket and unverified-coverage headers, preserving its JSON body.
-TradingView recovery remains capped at 1440 minutes; long-outage backfill is not
-solved. Owner accepts paced TSETMC latest observations rather than instantaneous
+TradingView recovery now defaults to 4999 minutes; backfill beyond available
+provider history is not solved. Owner accepts paced TSETMC latest observations rather than instantaneous
 provider snapshots. Companion collector now retries empty history next sweep
 instead of checkpointing it for a day. No schema migration required.
 
@@ -88,3 +88,33 @@ paths); native API/store suite 38 passed against disposable PostgreSQL 16.1 on
 port 56052, including quote ordering and coverage response tests. Ruff and mypy
 passed. Graph rebuilt (SQL extraction unavailable: missing optional parser).
 This does not qualify employer deployment or prove uninterrupted live feeds.
+
+## Extended native history (2026-10-25)
+
+The old 1440-minute cap was local, not a measured upstream boundary. Native CLI
+now defaults to 4999 minutes and requests at most 5000 bars (one may be forming).
+Legacy Settings default stays 300; its validated maximum is now 4999. Quote frame
+limits stay 256 KiB; candle WebSocket/decoder buffers are bounded at 2 MiB.
+Native requests allow 30 seconds and process ten sources per batch, retaining the
+existing two-request concurrency, identity/status checks and receipt handling.
+API coverage reports the updated maximum, not the active collector configuration.
+
+Evidence: an initial larger BTC request failed with local close1009 (frame exceeded
+262144 bytes), explaining the earlier apparently upstream disconnect. After fixing
+both transport and decoder bounds, BTC yielded 4999 completed bars, from
+2026-10-22T03:57Z through 2026-10-25T15:15Z using a 30s budget. A 15s trial timed out.
+OANDA/FX EURUSD each supplied >2400 bars including data older than one day; weekend
+closure accounts for a shorter observed window. These bounded probes do not prove
+continuous access or all100 expanded-history completeness. Raw outputs/scripts are
+ignored in .local; no live company uploads or production DB changes were made.
+
+Restart tradingview-simple without an explicit smaller --history-minutes to enable
+it. Stored history is retained indefinitely by this native path. No migration.
+Pending API uploads still pause acquisition, so outages beyond available source
+history can still leave gaps. Coverage exposes absence without manufacturing bars.
+
+Verification for extended history: full deterministic suite 562 passed / 372
+skipped; separate native PostgreSQL suite 39 passed on disposable port56052.
+Ruff and mypy passed. Large-frame acceptance/rejection, 4999-minute bounds and
+23-source grouping (10/10/3) have regression tests. Graph rebuilt; optional SQL
+parser is still absent. No changes were needed in the TSETMC repository.

@@ -56,14 +56,15 @@ def encode_message(method: str, parameters: list[Any]) -> str:
 class FrameDecoder:
     """Bounded incremental framing; the site's length unit is UTF-16 code units."""
 
-    def __init__(self) -> None:
+    def __init__(self, max_units: int = MAX_FRAME_UNITS) -> None:
+        self.max_units = max_units
         self.buffer = bytearray()
 
     def feed(self, raw: str) -> list[str]:
         if not isinstance(raw, str):
             raise ValueError("tradingview requires text frames")
         self.buffer.extend(raw.encode("utf-16-le"))
-        if len(self.buffer) > 2 * MAX_FRAME_UNITS + 64:
+        if len(self.buffer) > 2 * self.max_units + 64:
             raise ValueError("tradingview frame buffer exceeds local limit")
         marker = "~m~".encode("utf-16-le")
         messages: list[str] = []
@@ -81,7 +82,7 @@ class FrameDecoder:
             if not re.fullmatch(r"[0-9]{1,8}", length):
                 raise ValueError("tradingview malformed frame length")
             units = int(length)
-            if not 1 <= units <= MAX_FRAME_UNITS:
+            if not 1 <= units <= self.max_units:
                 raise ValueError("tradingview frame exceeds local limit")
             start = end + len(marker)
             stop = start + units * 2

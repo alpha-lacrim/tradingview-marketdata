@@ -75,6 +75,21 @@ def test_decoder_bounds_unfinished_frames():
         FrameDecoder().feed("x" * (MAX_FRAME_UNITS + 33))
 
 
+def test_candle_decoder_accepts_large_history_but_remains_bounded():
+    from marketdata.providers.tradingview_candles import (
+        MAX_CANDLE_FRAME_UNITS,
+        TradingViewCandleProvider,
+    )
+
+    provider = TradingViewCandleProvider(Settings(_env_file=None), Metrics())
+    body = "x" * (MAX_FRAME_UNITS + 100)
+    assert provider.decoder.feed(wrap(body)) == [body]
+    with pytest.raises(ValueError):
+        FrameDecoder().feed(wrap(body))  # Quotes retain their smaller limit.
+    with pytest.raises(ValueError):
+        provider.decoder.feed(f"~m~{MAX_CANDLE_FRAME_UNITS + 1}~m~")
+
+
 async def test_captured_quotes_all_seventeen_sources_verified():
     provider = await make_provider()
     ticks = []

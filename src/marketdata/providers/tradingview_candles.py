@@ -19,11 +19,13 @@ from marketdata.observability import Metrics
 from marketdata.providers.base import PermanentConnectionError, PermanentProviderError, Subscription
 from marketdata.providers.candles import CandleProvider
 from marketdata.providers.tradingview import (
-    MAX_FRAME_UNITS,
     FrameDecoder,
     encode_message,
     observed_decimal,
 )
+
+# A 5000-bar chart exceeds the quote transport's 256 KiB cap.
+MAX_CANDLE_FRAME_UNITS = 2 * 1024 * 1024
 
 
 def validate_source(info: dict[str, Any], pair: Subscription) -> None:
@@ -117,7 +119,7 @@ class TradingViewCandleProvider(CandleProvider):
         self.settings = settings
         self.grace = settings.candle_fetch_grace_seconds
         self.socket: ClientConnection | None = None
-        self.decoder = FrameDecoder()
+        self.decoder = FrameDecoder(MAX_CANDLE_FRAME_UNITS)
         self.connection_generation = 0
         self.request_serial = 0
         self.fetching = False
@@ -160,7 +162,7 @@ class TradingViewCandleProvider(CandleProvider):
                 ping_interval=20,
                 ping_timeout=20,
                 max_queue=16,
-                max_size=MAX_FRAME_UNITS,
+                max_size=MAX_CANDLE_FRAME_UNITS,
             )
         except InvalidStatus as error:
             if error.response.status_code == 429:
@@ -169,7 +171,7 @@ class TradingViewCandleProvider(CandleProvider):
             if error.response.status_code in (400, 401, 403, 451):
                 raise PermanentConnectionError("tradingview_access_rejected") from None
             raise
-        self.decoder = FrameDecoder()
+        self.decoder = FrameDecoder(MAX_CANDLE_FRAME_UNITS)
         self.transport_connected()
         self.metrics.tradingview_sockets.set(1)
         try:
