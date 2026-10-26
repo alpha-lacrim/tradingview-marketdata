@@ -129,7 +129,10 @@ The client shares paced requests across both streams. Latest sweeps take minutes
 for 100 instruments (at least about 100 seconds), followed by `--poll-seconds` (15 seconds by default).
 Full history refreshes per instrument every `--history-seconds` (86400 by default);
 acknowledged history completion survives restarts. `--once` forces one full pass.
-Malformed history skips that instrument visibly; unrelated instruments continue.
+Valid history rows upload even when other dates are flagged. Invalid/conflicting
+rows stay in collector diagnostics; metadata.history_validation marks partial
+snapshots and row counts. Malformed responses, all-invalid history or bad identities
+still fail the instrument; unrelated instruments continue.
 Access denials and permanent upload failures stop. The original pilot is untouched.
 
 Default state directory: `.local/simple-tsetmc/`. Preserve pending files and the

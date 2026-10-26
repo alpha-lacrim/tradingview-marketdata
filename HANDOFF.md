@@ -139,10 +139,22 @@ and requires start+24h <= cutoff; exact session finality remains unverified.
 Live small read-only probes accepted 5m/15m/1d for BTC, OANDA EURUSD, FX EURUSD.
 No HTML scraping: direct guest chart/quote WebSocket messages, as documented in
 docs/tradingview.md. Guest protocol remains experimental; no account access bypass.
-TSETMC diagnostic capture is implemented in companion repo; invalid-history upload
-policy remains unchanged pending user's inspection of real flagged source values.
+TSETMC diagnostic capture is implemented in companion repo; native history now
+uploads valid rows from partial snapshots with explicit validation metadata.
 
 Verification: company full suite575 passed365 skipped against disposable native
 PostgreSQL; after final scheduler/parameterized checks, targeted suite132 passed10
 skipped. Ruff/mypy/format passed. Source suite318 passed119 skipped. Live interval
 probes were read-only and bounded, not all100 long-duration qualification.
+
+
+## Companion partial-history update
+
+TSETMC native collector no longer rejects thousands of valid dates because a few
+rows are invalid. Existing parser rules and conflict-date quarantine retained;
+valid uploads carry metadata.history_validation counts/status, raw flags remain in
+rotating source diagnostics. No company API/schema changes needed. Chart remains
+unchanged; /api/records exposes partial status. Restart source collector with its
+existing state directory. Previously failed histories are retried; acknowledged
+snapshots refresh on their ordinary daily schedule. No user DB writes performed
+by this change; bounded live source proof checked against company upload contract.
