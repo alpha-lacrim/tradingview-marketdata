@@ -110,3 +110,18 @@ def test_invalid_retry_after_uses_minimum(header):
 
 def test_long_retry_after_is_not_shortened():
     assert delivery.retry_delay("7200", 60) == 7200
+
+
+@pytest.mark.parametrize("count", [0, 1, 99, 100, 101, 501, 2501])
+def test_history_batches_prioritize_recent_rows_without_loss(count):
+    rows = list(range(count))
+    batches = list(delivery.history_batches(rows))
+    assert all(0 < len(batch) <= 100 and batch == sorted(batch) for batch in batches)
+    flattened = [row for batch in batches for row in batch]
+    assert sorted(flattened) == rows
+    assert len(flattened) == len(set(flattened))
+    if batches:
+        assert batches[0][-1] == count - 1
+        assert [batch[0] for batch in batches] == sorted(
+            (batch[0] for batch in batches), reverse=True
+        )

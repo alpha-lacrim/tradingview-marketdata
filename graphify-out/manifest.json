@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1792999045.577977,
-    "seen": 1792999187.7031167,
-    "ast_hash": "d876978dc2332a493589b349344fc505",
+    "mtime": 1793013958.8923595,
+    "seen": 1793013976.6906092,
+    "ast_hash": "90076ff56634478329dcb8e783d68cc6",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3534,15 +3534,15 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_collector.py": {
-    "mtime": 1792999045.5573974,
-    "seen": 1792999187.6824808,
-    "ast_hash": "0cbd202ad51529f8388d0f235d714696",
+    "mtime": 1793013784.2719674,
+    "seen": 1793013976.6806016,
+    "ast_hash": "bbf2c804fa5048dc49c9ed19cefe52e4",
     "semantic_hash": ""
   },
   "src/marketdata/simple_delivery.py": {
-    "mtime": 1792672267.9658322,
-    "seen": 1792672727.8114657,
-    "ast_hash": "204f5d5689d17668d2dd4af3d5184634",
+    "mtime": 1793007781.7413185,
+    "seen": 1793008005.5475113,
+    "ast_hash": "2f385ed37e888e229aaa45692e761aec",
     "semantic_hash": ""
   },
   "src/marketdata/simple_models.py": {
@@ -3558,9 +3558,9 @@
     "semantic_hash": ""
   },
   "tests/test_simple_native.py": {
-    "mtime": 1792999117.9865916,
-    "seen": 1792999187.699954,
-    "ast_hash": "b5f2b04e55fbbb2139ec0822433b4a83",
+    "mtime": 1793013910.3763618,
+    "seen": 1793013976.6885996,
+    "ast_hash": "87700f788ed2790e21a0760fc293452e",
     "semantic_hash": ""
   },
   ".github/workflows/native.yaml": {
@@ -3582,9 +3582,9 @@
     "semantic_hash": ""
   },
   "docs/native-install.md": {
-    "mtime": 1792999045.5593965,
-    "seen": 1792999187.7205667,
-    "ast_hash": "5824ab2859d64d105b76e2898c8e1c41",
+    "mtime": 1793013958.8913765,
+    "seen": 1793013976.7046037,
+    "ast_hash": "5bd453b84225786e66250ca7c7430a7d",
     "semantic_hash": ""
   },
   "docs/history/handoff-before-native-install.md": {
@@ -3594,9 +3594,9 @@
     "semantic_hash": ""
   },
   "tests/test_simple_delivery_retry.py": {
-    "mtime": 1792672399.479758,
-    "seen": 1792672727.8204737,
-    "ast_hash": "a56605823ab77097d9a60e2530a023ff",
+    "mtime": 1793007781.8607392,
+    "seen": 1793008005.565804,
+    "ast_hash": "b80e5515566295761dc93af4126b8db1",
     "semantic_hash": ""
   },
   "config/instruments.tradingview-native100.json": {

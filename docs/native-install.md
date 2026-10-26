@@ -265,3 +265,41 @@ Initial full history across 100 feeds/four intervals can take substantially long
 than minute-only startup. Refresh sweeps overlap 30 bars and full history hourly.
 Daily timestamps preserve source session offsets. Restart both processes using
 the same state directories; never discard pending uploads.
+
+
+## Slow remote history uploads
+
+Native collectors now send history in batches of at most100 observations, newest
+batches first and chronological within each batch. This makes recent chart data
+available earlier while older history continues filling. Upload timeout is60s.
+The existing pending file is drained unchanged before new smaller batches are
+created; do not delete or rewrite it. One pending batch still pauses that stream.
+This reduces timeout exposure, not the total amount of historical data to upload.
+The same history refresh/correction windows and exact receipt checks apply.
+
+Company deployment investigation: the updated API at212.33.202.29 accepted current
+native intervals and contained genuine history, but only8 instruments per market
+had history while100 per market had quotes at the initial snapshot. Current
+collectors were using the correct company URL. A retained500-row TSETMC batch
+(~551KB) took28.73s, a500-row TradingView batch (~381KB) took19.72s, close to the
+old30s timeout. A100-row genuine batch (~106KB) then took3.41s and returned a
+matching receipt. These are point-in-time measurements, not a bandwidth/SLA claim.
+The delay could be network transfer, server processing or both; no employer shell
+or PostgreSQL diagnostics were available. Recent-date default queries can be
+empty while only old history has arrived. Use start=0 to inspect accumulated data.
+Restart both laptop collectors with their existing company state directories.
+No company API or database update is required for these client upload changes.
+
+
+Recent-first startup: in normal continuous operation TradingView first requests
+up to30 recent bars per instrument/timeframe across the universe, then does deep
+recovery. This preview does not set full-refresh markers. TSETMC uploads the
+newest100 valid daily rows per unfinished instrument before starting its deep
+backfill; preview uploads never set history-completed.json. Their records carry
+history_delivery.scope=recent_preview and full_upload_pending=true. The next full
+snapshot replaces that metadata on rows it redelivers. --once bypasses preview and
+still requests a full pass. Existing pending files drain first unchanged, including
+old500row batches. Normal full history may still take hours over a slow path;
+recent preview is not proof of complete provider coverage or minute freshness.
+Regression tests verify recent-first order, eventual full pass and no premature
+completion checkpoint. Source full suite330passed119skipped; company full suite576passed375skipped. No live all100 recovery qualification is claimed.

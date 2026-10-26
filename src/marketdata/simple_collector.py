@@ -18,7 +18,7 @@ from marketdata.providers.base import PermanentConnectionError, PermanentProvide
 from marketdata.providers.tradingview import TradingViewGuestProvider
 from marketdata.providers.tradingview_candles import TradingViewCandleProvider
 from marketdata.registry import Registry
-from marketdata.simple_delivery import PendingUpload, retry_delay, single_instance
+from marketdata.simple_delivery import PendingUpload, history_batches, retry_delay, single_instance
 
 
 def transport_detail(error: Exception) -> str:
@@ -100,7 +100,7 @@ async def run(args: argparse.Namespace) -> None:
         if os.getenv("SIMPLE_UPLOAD_TOKEN")
         else {}
     )
-    async with httpx.AsyncClient(timeout=30, headers=headers, trust_env=False) as http:
+    async with httpx.AsyncClient(timeout=60, headers=headers, trust_env=False) as http:
         bars_pending = PendingUpload(args.api_url, args.state_dir / "history.json", http)
         quotes_pending = PendingUpload(args.api_url, args.state_dir / "latest.json", http)
         recent: dict[str, Tick] = {}
@@ -110,6 +110,7 @@ async def run(args: argparse.Namespace) -> None:
             full_by_interval: dict[str, dict[str, datetime]] = {}
             backoff = 60.0
             concurrency = settings.tradingview_candle_concurrency
+            recent_pass = not args.once
             while True:
                 await bars_pending.drain()
                 intervals: list[Literal["1m", "5m", "15m", "1d"]] = getattr(
@@ -136,7 +137,12 @@ async def run(args: argparse.Namespace) -> None:
                                 symbol not in last_full
                                 or (end - last_full[symbol]).total_seconds() >= 3600
                             )
-                            start = end - timedelta(minutes=args.history_minutes * step)
+                            window = (
+                                min(args.history_minutes, 30)
+                                if recent_pass
+                                else args.history_minutes
+                            )
+                            start = end - timedelta(minutes=window * step)
                             if not full and symbol in last_success:
                                 start = max(
                                     start, last_success[symbol] - timedelta(minutes=30 * step)
@@ -171,16 +177,11 @@ async def run(args: argparse.Namespace) -> None:
                                 if not bars:
                                     empty += 1
                                 delivered += len(bars)
-                                for offset in range(0, len(bars), 500):
-                                    bars_pending.stage(
-                                        [
-                                            candle_record(b, pair)
-                                            for b in bars[offset : offset + 500]
-                                        ]
-                                    )
+                                for chunk in history_batches(bars):
+                                    bars_pending.stage([candle_record(b, pair) for b in chunk])
                                     await bars_pending.drain()
                                 last_success[symbol] = end
-                                if (
+                                if not recent_pass and (
                                     symbol not in last_full
                                     or (end - last_full[symbol]).total_seconds() >= 3600
                                 ):
@@ -188,7 +189,8 @@ async def run(args: argparse.Namespace) -> None:
                         print(
                             f"history {interval} cycle: {len(pairs) - failed} requests succeeded, "
                             f"{failed} failed; "
-                            f"{delivered} bars delivered, {empty} empty results",
+                            f"{delivered} bars delivered, {empty} empty results; "
+                            f"{'recent preview' if recent_pass else 'history refresh'}",
                             flush=True,
                         )
                         if not failed:
@@ -218,6 +220,7 @@ async def run(args: argparse.Namespace) -> None:
                         concurrency = min(concurrency, provider.effective_concurrency)
                         await provider.disconnect()
                     cycle_delay = max(cycle_delay, delay)
+                recent_pass = False
                 if args.once:
                     return
                 await asyncio.sleep(cycle_delay)

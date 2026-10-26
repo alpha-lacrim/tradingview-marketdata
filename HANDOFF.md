@@ -158,3 +158,38 @@ unchanged; /api/records exposes partial status. Restart source collector with it
 existing state directory. Previously failed histories are retried; acknowledged
 snapshots refresh on their ordinary daily schedule. No user DB writes performed
 by this change; bounded live source proof checked against company upload contract.
+
+
+## Company bulk history investigation
+
+Remote API at212.33.202.29 is now updated (native intervals and source parameter).
+Both active laptop collectors targeted the company URL correctly; pending history
+was valid500-row batches. Stored history existed for8 instruments per market at
+snapshot, quotes for100 each. Some TSETMC partial uploads contained only old dates,
+so last30days charts were empty despite records existing. No evidence of incorrect
+DB wiring; query/storage and matching upload receipts were verified remotely.
+
+Measured genuine pending batch replay: TSETMC500rows28.73s (~551KB), TradingView
+500rows19.72s (~381KB); old30s timeout had little margin. Smaller100row batch
+3.41s (~106KB), matching receipt. Added history_batches helper mirrored in both
+repos: newest100 first, ascending within each, every row once. HTTP timeout60s in
+both collectors. Pending bytes/receipts remain unchanged. Root cause of path
+slowness cannot be assigned to network/server without employer telemetry.
+User must stop/restart both laptop collectors using their company state dirs.
+No server/API migration required. Full company suite575passed375skipped; source
+329passed119skipped, lint/mypy passed. Tests verify batch bounds/order/no row loss.
+Server history fill across all100 feeds remains unqualified and may take hours.
+
+
+Recent-first startup: in normal continuous operation TradingView first requests
+up to30 recent bars per instrument/timeframe across the universe, then does deep
+recovery. This preview does not set full-refresh markers. TSETMC uploads the
+newest100 valid daily rows per unfinished instrument before starting its deep
+backfill; preview uploads never set history-completed.json. Their records carry
+history_delivery.scope=recent_preview and full_upload_pending=true. The next full
+snapshot replaces that metadata on rows it redelivers. --once bypasses preview and
+still requests a full pass. Existing pending files drain first unchanged, including
+old500row batches. Normal full history may still take hours over a slow path;
+recent preview is not proof of complete provider coverage or minute freshness.
+Regression tests verify recent-first order, eventual full pass and no premature
+completion checkpoint. Source full suite330passed119skipped; company full suite576passed375skipped. No live all100 recovery qualification is claimed.

@@ -668,3 +668,68 @@ async def test_native_timeframes_persist_and_preserve_source_timestamp(
         assert (await http.get("/api/chart", params=params)).json()["a"] == []
     with pytest.raises(ValidationError):
         Observation.model_validate(dict(row, market="tsetmc", symbol="123", interval="5m"))
+
+
+async def test_recent_preview_is_followed_by_full_tradingview_recovery(monkeypatch, tmp_path):
+    import asyncio
+    from types import SimpleNamespace
+
+    from marketdata import simple_collector as collector
+
+    pair = (
+        SimpleNamespace(canonical_symbol="TEST:ABC"),
+        SimpleNamespace(provider_symbol="TEST:ABC"),
+    )
+    requests = []
+    full_seen = asyncio.Event()
+    real_sleep = asyncio.sleep
+
+    class Provider:
+        async def subscribe(self, pairs):
+            pass
+
+        async def connect(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+        async def fetch_many(self, jobs):
+            requests.append(jobs[0])
+            if len(requests) == 2:
+                full_seen.set()
+            return {"TEST:ABC": []}
+
+    class Quotes(Provider):
+        async def stream_ticks(self):
+            await asyncio.Event().wait()
+            if False:
+                yield
+
+    async def fast_sleep(_):
+        await real_sleep(0)
+
+    monkeypatch.setattr(
+        collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: [pair])
+    )
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_, **__: Provider())
+    monkeypatch.setattr(collector, "TradingViewGuestProvider", lambda *_, **__: Quotes())
+    monkeypatch.setattr(collector.asyncio, "sleep", fast_sleep)
+    args = SimpleNamespace(
+        registry=None,
+        history_minutes=300,
+        api_url="http://company",
+        state_dir=tmp_path,
+        once=False,
+        intervals=["1m"],
+    )
+    task = asyncio.create_task(collector.run(args))
+    try:
+        await asyncio.wait_for(full_seen.wait(), timeout=3)
+    finally:
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    assert requests[0][3] == 31
+    assert requests[1][3] == 301
+    assert requests[1][2] - requests[1][1] == timedelta(minutes=300)
