@@ -19,6 +19,7 @@ from marketdata.providers.tradingview import TradingViewGuestProvider
 from marketdata.providers.tradingview_candles import TradingViewCandleProvider
 from marketdata.registry import Registry
 from marketdata.simple_delivery import PendingUpload, history_batches, retry_delay, single_instance
+from marketdata.simple_traffic import TrafficMeter
 
 
 def transport_detail(error: Exception) -> str:
@@ -95,14 +96,15 @@ async def run(args: argparse.Namespace) -> None:
         candle_request_timeout_seconds=30,
     )
     metrics = Metrics()
+    traffic = TrafficMeter(args.state_dir / "traffic.json")
     headers = (
         {"Authorization": "Bearer " + os.environ["SIMPLE_UPLOAD_TOKEN"]}
         if os.getenv("SIMPLE_UPLOAD_TOKEN")
         else {}
     )
     async with httpx.AsyncClient(timeout=60, headers=headers, trust_env=False) as http:
-        bars_pending = PendingUpload(args.api_url, args.state_dir / "history.json", http)
-        quotes_pending = PendingUpload(args.api_url, args.state_dir / "latest.json", http)
+        bars_pending = PendingUpload(args.api_url, args.state_dir / "history.json", http, traffic)
+        quotes_pending = PendingUpload(args.api_url, args.state_dir / "latest.json", http, traffic)
         recent: dict[str, Tick] = {}
 
         async def candles() -> None:
@@ -123,6 +125,7 @@ async def run(args: argparse.Namespace) -> None:
                     last_full = full_by_interval.setdefault(interval, {})
                     delay = backoff
                     provider = TradingViewCandleProvider(settings, metrics, interval=interval)
+                    provider.traffic = traffic
                     provider.effective_concurrency = concurrency
                     await provider.subscribe(pairs)
                     try:
@@ -230,6 +233,7 @@ async def run(args: argparse.Namespace) -> None:
             while True:
                 delay = backoff
                 provider = TradingViewGuestProvider(settings, metrics)
+                provider.traffic = traffic
                 await provider.subscribe(pairs)
                 try:
                     await provider.connect()
@@ -267,12 +271,19 @@ async def run(args: argparse.Namespace) -> None:
                 await asyncio.sleep(5)
 
         if args.once:
-            await candles()
+            try:
+                await candles()
+            finally:
+                traffic.report()
         else:
-            async with asyncio.TaskGroup() as group:
-                group.create_task(candles())
-                group.create_task(quotes())
-                group.create_task(publish_quotes())
+            try:
+                async with asyncio.TaskGroup() as group:
+                    group.create_task(candles())
+                    group.create_task(quotes())
+                    group.create_task(publish_quotes())
+                    group.create_task(traffic.report_loop())
+            finally:
+                traffic.report()
 
 
 def main() -> None:

@@ -193,3 +193,19 @@ old500row batches. Normal full history may still take hours over a slow path;
 recent preview is not proof of complete provider coverage or minute freshness.
 Regression tests verify recent-first order, eventual full pass and no premature
 completion checkpoint. Source full suite330passed119skipped; company full suite576passed375skipped. No live all100 recovery qualification is claimed.
+
+## Local traffic visibility (2026-10-26)
+
+Native collectors now persist cumulative application payload byte counters under
+their selected state directories (`traffic.json`) and print totals/deltas every
+minute. TradingView measures WebSocket message payloads; both collectors count API
+upload attempts/retries and response bodies. TSETMC measures decoded source HTTP
+response bodies. This is an estimate, not NIC/billed traffic. Telemetry save failure
+does not stop collection. Restart existing collectors to load the change; keep their
+state and pending files. No API/database migration is required. Local API and both
+collectors were observed running; local API had BTC1m/5m history and TSETMC daily
+history for Foolad and another symbol. This does not prove all source slots complete.
+Offline full suites: company 577 passed / 375 skipped, source 331 passed /
+119 skipped; Ruff, format and mypy passed in both repositories. Local API had
+native TradingView history and quotes for all 100 configured symbols at one
+snapshot; existing processes predate this telemetry change and need restart.

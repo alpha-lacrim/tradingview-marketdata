@@ -98,6 +98,13 @@ The default pending-file directory is `.local/simple-tradingview/`; `--state-dir
 selects another durable directory. Only one collector may own a given directory.
 If uploads fail, the pending batch stays on disk and new history acquisition waits.
 An outage longer than the available provider history can leave an unrecoverable gap.
+The collector prints payload transfer totals every minute and saves cumulative byte
+counters in `<state-dir>/traffic.json`. `source_received/source_sent` count decoded
+TradingView WebSocket messages; `api_sent` counts submitted upload bodies, including
+retries, and `api_received` counts response bodies. The file survives restarts. These
+are application payload estimates, not billed network bytes: WebSocket compression,
+HTTP headers, TLS, connection setup and retransmissions are excluded. A failed upload
+can send less than the submitted body counted here.
 The native default requests at most 5,000 bars, reserving one for the potentially forming bar.
 Requests use a 30-second timeout and groups of ten sources to bound recovery memory.
 This is a request window, not a guarantee that every source has all those minutes.

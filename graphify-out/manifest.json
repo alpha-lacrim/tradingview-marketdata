@@ -2040,21 +2040,21 @@
     "semantic_hash": ""
   },
   "src/marketdata/providers/tradingview.py": {
-    "mtime": 1792941319.9576008,
-    "seen": 1792941525.393802,
-    "ast_hash": "606685adb5a6ed0082736de752db8666",
+    "mtime": 1793017783.09953,
+    "seen": 1793018268.9712484,
+    "ast_hash": "9d62f522dc8d5d75c1318a954eac7f5b",
     "semantic_hash": ""
   },
   "src/marketdata/providers/tradingview_candles.py": {
-    "mtime": 1792998609.1993659,
-    "seen": 1792999187.6794863,
-    "ast_hash": "e7ad9d2f62ac854df932ae5685375025",
+    "mtime": 1793017783.10053,
+    "seen": 1793018268.9712484,
+    "ast_hash": "5712c01925502d5b6f9c96c32d38a429",
     "semantic_hash": ""
   },
   "src/marketdata/providers/tradingview_pipeline.py": {
-    "mtime": 1792999117.9290767,
-    "seen": 1792999187.6794863,
-    "ast_hash": "43b6f35ab15987bcf1c8a6b6f597f062",
+    "mtime": 1793017783.10053,
+    "seen": 1793018268.9712484,
+    "ast_hash": "e27c424e968d2eb70cf5e568499b577b",
     "semantic_hash": ""
   },
   "src/marketdata/quote_fields.py": {
@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793013958.8923595,
-    "seen": 1793013976.6906092,
-    "ast_hash": "90076ff56634478329dcb8e783d68cc6",
+    "mtime": 1793018198.7728128,
+    "seen": 1793018269.0042422,
+    "ast_hash": "df72a2b23fa998c17169ef70bb979248",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3534,15 +3534,15 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_collector.py": {
-    "mtime": 1793013784.2719674,
-    "seen": 1793013976.6806016,
-    "ast_hash": "bbf2c804fa5048dc49c9ed19cefe52e4",
+    "mtime": 1793017793.4497743,
+    "seen": 1793018268.9742572,
+    "ast_hash": "29d57e911a47956af2b7496bd5ea2ccf",
     "semantic_hash": ""
   },
   "src/marketdata/simple_delivery.py": {
-    "mtime": 1793007781.7413185,
-    "seen": 1793008005.5475113,
-    "ast_hash": "2f385ed37e888e229aaa45692e761aec",
+    "mtime": 1793017917.7586946,
+    "seen": 1793018268.9742572,
+    "ast_hash": "d6fcaf099e49a7296575e7e115a6735f",
     "semantic_hash": ""
   },
   "src/marketdata/simple_models.py": {
@@ -3582,9 +3582,9 @@
     "semantic_hash": ""
   },
   "docs/native-install.md": {
-    "mtime": 1793013958.8913765,
-    "seen": 1793013976.7046037,
-    "ast_hash": "5bd453b84225786e66250ca7c7430a7d",
+    "mtime": 1793018190.6824596,
+    "seen": 1793018269.0302465,
+    "ast_hash": "af8f6e653a4d50c1fb167d80a8fd6d4c",
     "semantic_hash": ""
   },
   "docs/history/handoff-before-native-install.md": {
@@ -3615,6 +3615,18 @@
     "mtime": 1792694051.8610926,
     "seen": 1792940914.7901855,
     "ast_hash": "583658c3a81baff9ac944249ec7fd74d",
+    "semantic_hash": ""
+  },
+  "src/marketdata/simple_traffic.py": {
+    "mtime": 1793018074.2492433,
+    "seen": 1793018268.9742572,
+    "ast_hash": "dea56a445a71df74fe45ddbd92151731",
+    "semantic_hash": ""
+  },
+  "tests/test_simple_traffic.py": {
+    "mtime": 1793017833.6257064,
+    "seen": 1793018268.9992425,
+    "ast_hash": "f14139315acf4598a470bc6676b0992b",
     "semantic_hash": ""
   }
 }

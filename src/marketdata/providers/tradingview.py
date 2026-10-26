@@ -24,6 +24,7 @@ from marketdata.config import Settings
 from marketdata.domain import DataStatus, InstrumentType, Tick, from_ns, normalize, utc_now
 from marketdata.observability import Metrics
 from marketdata.providers.base import MarketDataProvider, PermanentProviderError, Subscription
+from marketdata.simple_traffic import TrafficMeter
 
 logger = logging.getLogger(__name__)
 MAX_FRAME_UNITS = 262144
@@ -141,6 +142,7 @@ class TradingViewGuestProvider(MarketDataProvider):
         super().__init__("tradingview_guest", metrics)
         self.settings = settings
         self.socket: ClientConnection | None = None
+        self.traffic: TrafficMeter | None = None
         self.session = ""
         self.decoder = FrameDecoder()
         self.source_metadata: dict[str, dict[str, Any]] = {}
@@ -221,7 +223,10 @@ class TradingViewGuestProvider(MarketDataProvider):
                 [self.session, *(m.provider_symbol for _, m in self.subscriptions)],
             ),
         ):
-            await self.socket.send(encode_message(method, params))
+            frame = encode_message(method, params)
+            await self.socket.send(frame)
+            if self.traffic:
+                self.traffic.frame("source_sent", frame)
         self.subscriptions_requested()
         logger.warning(
             "experimental unsupported TradingView guest protocol enabled",
@@ -325,6 +330,8 @@ class TradingViewGuestProvider(MarketDataProvider):
         if socket is None:
             raise RuntimeError("not connected")
         async for raw in socket:
+            if self.traffic:
+                self.traffic.frame("source_received", raw)
             received = utc_now()
             self.message_received(received)
             try:
@@ -334,7 +341,10 @@ class TradingViewGuestProvider(MarketDataProvider):
                 raise ConnectionError("tradingview_framing_error") from None
             for body in messages:
                 if body.startswith("~h~"):
-                    await socket.send(f"~m~{len(body)}~m~{body}")
+                    frame = f"~m~{len(body)}~m~{body}"
+                    await socket.send(frame)
+                    if self.traffic:
+                        self.traffic.frame("source_sent", frame)
                     continue
                 try:
                     data = json.loads(body, parse_float=Decimal)

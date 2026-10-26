@@ -212,7 +212,10 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
     async def send(method: str, params: list[Any]) -> None:
         current_generation()
         async with asyncio.timeout(timeout):
-            await socket.send(encode_message(method, params))
+            frame = encode_message(method, params)
+            await socket.send(frame)
+            if p.traffic:
+                p.traffic.frame("source_sent", frame)
 
     async def dispatch() -> bool:
         job = next(waiting, None)
@@ -264,12 +267,17 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
         while True:
             current_generation()
             raw = await socket.recv()
+            if p.traffic:
+                p.traffic.frame("source_received", raw)
             current_generation()
             received = utc_now()
             p.health.last_message_at = received
             for body in decoder.feed(raw):  # type: ignore[arg-type]
                 if body.startswith("~h~"):
-                    await socket.send(f"~m~{len(body)}~m~{body}")
+                    frame = f"~m~{len(body)}~m~{body}"
+                    await socket.send(frame)
+                    if p.traffic:
+                        p.traffic.frame("source_sent", frame)
                     continue
                 message = json.loads(body, parse_float=Decimal)
                 if not isinstance(message, dict):
@@ -465,7 +473,10 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
         try:
             async with asyncio.timeout(min(1, timeout)):
                 for session in active:
-                    await socket.send(encode_message("chart_delete_session", [session]))
+                    frame = encode_message("chart_delete_session", [session])
+                    await socket.send(frame)
+                    if p.traffic:
+                        p.traffic.frame("source_sent", frame)
                     if active[session].created:
                         stats["sessions_removed"] += 1
                         stats["sessions_current"] = max(0, stats["sessions_current"] - 1)

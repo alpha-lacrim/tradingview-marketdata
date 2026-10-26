@@ -23,6 +23,7 @@ from marketdata.providers.tradingview import (
     encode_message,
     observed_decimal,
 )
+from marketdata.simple_traffic import TrafficMeter
 
 # A 5000-bar chart exceeds the quote transport's 256 KiB cap.
 MAX_CANDLE_FRAME_UNITS = 2 * 1024 * 1024
@@ -131,6 +132,7 @@ class TradingViewCandleProvider(CandleProvider):
         self.settings = settings
         self.grace = settings.candle_fetch_grace_seconds
         self.socket: ClientConnection | None = None
+        self.traffic: TrafficMeter | None = None
         self.decoder = FrameDecoder(MAX_CANDLE_FRAME_UNITS)
         self.connection_generation = 0
         self.request_serial = 0
@@ -188,9 +190,10 @@ class TradingViewCandleProvider(CandleProvider):
         self.metrics.tradingview_sockets.set(1)
         try:
             async with asyncio.timeout(self.settings.candle_request_timeout_seconds):
-                await self.socket.send(
-                    encode_message("set_auth_token", ["unauthorized_user_token"])
-                )
+                frame = encode_message("set_auth_token", ["unauthorized_user_token"])
+                await self.socket.send(frame)
+                if self.traffic:
+                    self.traffic.frame("source_sent", frame)
         except ConnectionClosed as error:
             self.metrics.tradingview_disconnects.inc()
             self.metrics.tradingview_throttle.labels("connection").inc()
