@@ -28,7 +28,7 @@ class MarketCandle(Model):
     canonical_symbol: str
     provider: str
     provider_symbol: str
-    interval: Literal["1m"] = "1m"
+    interval: Literal["1m", "5m", "15m", "1d"] = "1m"
     bucket_start: datetime
     bucket_end: datetime
     open: Decimal
@@ -58,8 +58,10 @@ class MarketCandle(Model):
     def completed(self) -> Self:
         if self.bucket_start != minute_start(self.bucket_start):
             raise ValueError("minute-aligned bucket required")
-        if self.bucket_end != self.bucket_start + timedelta(minutes=1):
-            raise ValueError("one minute bucket required")
+        if self.bucket_end != self.bucket_start + timedelta(
+            minutes={"1m": 1, "5m": 5, "15m": 15, "1d": 1440}[self.interval]
+        ):
+            raise ValueError("bucket duration must match interval")
         if self.bucket_end > self.received_timestamp:
             raise ValueError("forming candles cannot be finalized")
         if not self.low <= min(self.open, self.close) <= max(self.open, self.close) <= self.high:

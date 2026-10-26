@@ -63,7 +63,7 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
         raise ValueError("unique candle jobs required within local worker cap")
     if any(
         end <= start
-        or end - start > timedelta(minutes=p.settings.candle_backfill_minutes)
+        or end - start > timedelta(minutes=p.settings.candle_backfill_minutes * p.step_minutes)
         or not 1 <= count <= p.settings.candle_backfill_minutes + 1
         or pair[0].canonical_symbol not in p.health.symbols
         for pair, start, end, count in jobs
@@ -256,7 +256,7 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
             stats["sessions_created"] += 1
             stats["sessions_current"] += 1
             await send("resolve_symbol", [session, "symbol_1", pair[1].provider_symbol])
-            await send("create_series", [session, "s1", "s1", "symbol_1", "1", count, ""])
+            await send("create_series", [session, "s1", "s1", "symbol_1", p.resolution, count, ""])
             state.sent = utc_now()
         return True
 
@@ -326,7 +326,7 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
                             if key is None:
                                 raise ValueError("missing bar time")
                             state.bars[key] = values
-                            if key == Decimal(int(state.end.timestamp())) - 60:
+                            if key == Decimal(int(state.end.timestamp())) - 60 * p.step_minutes:
                                 state.available = received
                         if len(state.bars) > state.count + 2:
                             raise ValueError("candle response exceeds requested bound")
@@ -345,9 +345,15 @@ async def retrieve(p: TradingViewCandleProvider, jobs: list[Job]) -> dict[str, R
                         cutoff = min(state.end, received - timedelta(seconds=p.grace))
                         parse_timer = time.perf_counter()
                         result = []
+                        newest = max(state.bars, default=None)
                         for ts, values in sorted(state.bars.items()):
+                            if p.interval == "1d" and ts == newest:
+                                continue
                             bucket = from_ns(int(ts) * 1_000_000_000)
-                            if state.start <= bucket and bucket + timedelta(minutes=1) <= cutoff:
+                            if (
+                                state.start <= bucket
+                                and bucket + timedelta(minutes=p.step_minutes) <= cutoff
+                            ):
                                 result.append(
                                     p._parse_native_bar(
                                         values, state.pair, state.info, received, status

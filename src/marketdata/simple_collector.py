@@ -5,7 +5,7 @@ import asyncio
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 from websockets.exceptions import ConnectionClosed, InvalidMessage, InvalidStatus
@@ -44,7 +44,7 @@ def candle_record(bar: MarketCandle, pair: Subscription) -> dict[str, Any]:
     return dict(
         market="tradingview",
         symbol=bar.provider_symbol,
-        interval="1m",
+        interval=bar.interval,
         time=int(bar.bucket_start.timestamp()),
         received_at=bar.received_timestamp,
         open=bar.open,
@@ -106,101 +106,121 @@ async def run(args: argparse.Namespace) -> None:
         recent: dict[str, Tick] = {}
 
         async def candles() -> None:
-            last_success: dict[str, datetime] = {}
-            last_full: dict[str, datetime] = {}
+            success_by_interval: dict[str, dict[str, datetime]] = {}
+            full_by_interval: dict[str, dict[str, datetime]] = {}
             backoff = 60.0
             concurrency = settings.tradingview_candle_concurrency
             while True:
                 await bars_pending.drain()
-                delay = backoff
-                provider = TradingViewCandleProvider(settings, metrics)
-                provider.effective_concurrency = concurrency
-                await provider.subscribe(pairs)
-                try:
-                    await provider.connect()
-                    end = (datetime.now(UTC) - timedelta(seconds=3)).replace(
-                        second=0, microsecond=0
-                    )
-                    jobs = []
-                    for pair in pairs:
-                        symbol = pair[0].canonical_symbol
-                        full = (
-                            symbol not in last_full
-                            or (end - last_full[symbol]).total_seconds() >= 3600
+                intervals: list[Literal["1m", "5m", "15m", "1d"]] = getattr(
+                    args, "intervals", ["1m"]
+                )
+                cycle_delay = 60.0
+                for interval in dict.fromkeys(intervals):
+                    step = {"1m": 1, "5m": 5, "15m": 15, "1d": 1440}[interval]
+                    last_success = success_by_interval.setdefault(interval, {})
+                    last_full = full_by_interval.setdefault(interval, {})
+                    delay = backoff
+                    provider = TradingViewCandleProvider(settings, metrics, interval=interval)
+                    provider.effective_concurrency = concurrency
+                    await provider.subscribe(pairs)
+                    try:
+                        await provider.connect()
+                        end = (datetime.now(UTC) - timedelta(seconds=3)).replace(
+                            second=0, microsecond=0
                         )
-                        start = end - timedelta(minutes=args.history_minutes)
-                        if not full and symbol in last_success:
-                            start = max(start, last_success[symbol] - timedelta(minutes=30))
-                        jobs.append(
-                            (pair, start, end, int((end - start).total_seconds() // 60) + 1)
-                        )
-                    failed = empty = delivered = 0
-                    # Bound recovery memory: do not retain 5000 bars for all 100 sources.
-                    for offset in range(0, len(jobs), 10):
-                        batch = jobs[offset : offset + 10]
-                        results = await provider.fetch_many(batch)
-                        for pair, _, _, _ in batch:
+                        jobs = []
+                        for pair in pairs:
                             symbol = pair[0].canonical_symbol
-                            bars = results[symbol]
-                            if isinstance(bars, PermanentConnectionError):
-                                raise bars
-                            if isinstance(bars, Exception):
-                                failed += 1
-                                print(
-                                    f"history {pair[1].provider_symbol}: {transport_detail(bars)}",
-                                    flush=True,
-                                )
-                                delay = max(delay, transport_delay(bars, backoff))
-                                continue
-                            if not bars:
-                                empty += 1
-                            delivered += len(bars)
-                            for offset in range(0, len(bars), 500):
-                                bars_pending.stage(
-                                    [candle_record(b, pair) for b in bars[offset : offset + 500]]
-                                )
-                                await bars_pending.drain()
-                            last_success[symbol] = end
-                            if (
+                            full = (
                                 symbol not in last_full
                                 or (end - last_full[symbol]).total_seconds() >= 3600
-                            ):
-                                last_full[symbol] = end
-                    print(
-                        f"history cycle: {len(pairs) - failed} requests succeeded, "
-                        f"{failed} failed; "
-                        f"{delivered} bars delivered, {empty} empty results",
-                        flush=True,
-                    )
-                    if not failed:
-                        backoff = delay = 60.0
-                    else:
-                        backoff = min(backoff * 2, 300)
-                    if args.once and failed:
-                        raise RuntimeError(f"history failed for {failed} sources")
-                except PermanentProviderError:
-                    raise
-                except (
-                    OSError,
-                    TimeoutError,
-                    ConnectionClosed,
-                    InvalidMessage,
-                    InvalidStatus,
-                ) as error:
-                    delay = transport_delay(error, backoff)
-                    backoff = min(backoff * 2, 300)
-                    print(
-                        f"history transport: {transport_detail(error)}; retry in {delay:g}s",
-                        flush=True,
-                    )
-                    if args.once:
+                            )
+                            start = end - timedelta(minutes=args.history_minutes * step)
+                            if not full and symbol in last_success:
+                                start = max(
+                                    start, last_success[symbol] - timedelta(minutes=30 * step)
+                                )
+                            jobs.append(
+                                (
+                                    pair,
+                                    start,
+                                    end,
+                                    int((end - start).total_seconds() // (60 * step)) + 1,
+                                )
+                            )
+                        failed = empty = delivered = 0
+                        # Bound recovery memory: do not retain 5000 bars for all 100 sources.
+                        for offset in range(0, len(jobs), 10):
+                            batch = jobs[offset : offset + 10]
+                            results = await provider.fetch_many(batch)
+                            for pair, _, _, _ in batch:
+                                symbol = pair[0].canonical_symbol
+                                bars = results[symbol]
+                                if isinstance(bars, PermanentConnectionError):
+                                    raise bars
+                                if isinstance(bars, Exception):
+                                    failed += 1
+                                    print(
+                                        f"history {pair[1].provider_symbol}: "
+                                        f"{transport_detail(bars)}",
+                                        flush=True,
+                                    )
+                                    delay = max(delay, transport_delay(bars, backoff))
+                                    continue
+                                if not bars:
+                                    empty += 1
+                                delivered += len(bars)
+                                for offset in range(0, len(bars), 500):
+                                    bars_pending.stage(
+                                        [
+                                            candle_record(b, pair)
+                                            for b in bars[offset : offset + 500]
+                                        ]
+                                    )
+                                    await bars_pending.drain()
+                                last_success[symbol] = end
+                                if (
+                                    symbol not in last_full
+                                    or (end - last_full[symbol]).total_seconds() >= 3600
+                                ):
+                                    last_full[symbol] = end
+                        print(
+                            f"history {interval} cycle: {len(pairs) - failed} requests succeeded, "
+                            f"{failed} failed; "
+                            f"{delivered} bars delivered, {empty} empty results",
+                            flush=True,
+                        )
+                        if not failed:
+                            backoff = delay = 60.0
+                        else:
+                            backoff = min(backoff * 2, 300)
+                        if args.once and failed:
+                            raise RuntimeError(f"history failed for {failed} sources")
+                    except PermanentProviderError:
                         raise
-                finally:
-                    concurrency = min(concurrency, provider.effective_concurrency)
-                    await provider.disconnect()
+                    except (
+                        OSError,
+                        TimeoutError,
+                        ConnectionClosed,
+                        InvalidMessage,
+                        InvalidStatus,
+                    ) as error:
+                        delay = transport_delay(error, backoff)
+                        backoff = min(backoff * 2, 300)
+                        print(
+                            f"history transport: {transport_detail(error)}; retry in {delay:g}s",
+                            flush=True,
+                        )
+                        if args.once:
+                            raise
+                    finally:
+                        concurrency = min(concurrency, provider.effective_concurrency)
+                        await provider.disconnect()
+                    cycle_delay = max(cycle_delay, delay)
                 if args.once:
                     return
-                await asyncio.sleep(delay)
+                await asyncio.sleep(cycle_delay)
 
         async def quotes() -> None:
             backoff = 60.0
@@ -261,7 +281,20 @@ def main() -> None:
         default=Path("config/instruments.tradingview-native100.json"),
     )
     parser.add_argument("--state-dir", type=Path, default=Path(".local/simple-tradingview"))
-    parser.add_argument("--history-minutes", type=int, default=MAX_HISTORY_MINUTES)
+    parser.add_argument(
+        "--history-bars",
+        "--history-minutes",
+        dest="history_minutes",
+        type=int,
+        default=MAX_HISTORY_MINUTES,
+        help="recovery bars per interval (30..4999); old flag remains an alias",
+    )
+    parser.add_argument(
+        "--intervals",
+        nargs="+",
+        choices=["1m", "5m", "15m", "1d"],
+        default=["1m", "5m", "15m", "1d"],
+    )
     parser.add_argument("--once", action="store_true", help="upload one history cycle and exit")
     args = parser.parse_args()
     if not 30 <= args.history_minutes <= MAX_HISTORY_MINUTES:

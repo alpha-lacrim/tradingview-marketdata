@@ -6,7 +6,7 @@ See docs/tradingview.md. No quote sampling, login, cookies or browser automation
 import asyncio
 import re
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 
 from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import ConnectionClosed, InvalidStatus
@@ -49,6 +49,7 @@ def parse_bar(
     info: dict[str, Any],
     received: datetime,
     source_status: str,
+    interval: Literal["1m", "5m", "15m", "1d"] = "1m",
 ) -> MarketCandle:
     validate_source(info, pair)
     if source_status not in ("streaming", "realtime"):
@@ -83,7 +84,8 @@ def parse_bar(
         provider=mapping.provider,
         provider_symbol=mapping.provider_symbol,
         bucket_start=start,
-        bucket_end=start + timedelta(minutes=1),
+        bucket_end=start + timedelta(minutes={"1m": 1, "5m": 5, "15m": 15, "1d": 1440}[interval]),
+        interval=interval,
         open=opening,
         high=high,
         low=low,
@@ -95,7 +97,7 @@ def parse_bar(
         metadata={
             **unclassified_volume,
             "provenance": "native_upstream_chart",
-            "resolution": "1",
+            "resolution": {"1m": "1", "5m": "5", "15m": "15", "1d": "1D"}[interval],
             "bar_source": info["bar_source"],
             "bar_transform": info["bar_transform"],
             "bar_fillgaps": info["bar_fillgaps"],
@@ -114,7 +116,17 @@ def parse_bar(
 class TradingViewCandleProvider(CandleProvider):
     supports_request_budget = True
 
-    def __init__(self, settings: Settings, metrics: Metrics, *, experimental_pool: bool = False):
+    def __init__(
+        self,
+        settings: Settings,
+        metrics: Metrics,
+        *,
+        experimental_pool: bool = False,
+        interval: Literal["1m", "5m", "15m", "1d"] = "1m",
+    ):
+        self.interval = interval
+        self.step_minutes = {"1m": 1, "5m": 5, "15m": 15, "1d": 1440}[interval]
+        self.resolution = {"1m": "1", "5m": "5", "15m": "15", "1d": "1D"}[interval]
         super().__init__("tradingview_guest", metrics)
         self.settings = settings
         self.grace = settings.candle_fetch_grace_seconds
@@ -207,7 +219,7 @@ class TradingViewCandleProvider(CandleProvider):
         received: datetime,
         source_status: str,
     ) -> MarketCandle:
-        return parse_bar(values, pair, info, received, source_status)
+        return parse_bar(values, pair, info, received, source_status, self.interval)
 
     async def fetch_completed(
         self, pair: Subscription, start: datetime, end: datetime, count: int

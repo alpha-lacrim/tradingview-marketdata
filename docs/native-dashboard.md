@@ -20,7 +20,7 @@ larger ranges return HTTP 413 and should be split into shorter requests.
 
 | JSON | Go field | Meaning |
 |---|---|---|
-| a | Time | UTC interval start in Unix seconds |
+| a | Time | Source bar start (native) or UTC bucket start (aggregate), Unix seconds |
 | b | Open | Opening price |
 | c | Close | TradingView native close; TSETMC official close |
 | d | High | Native high |
@@ -36,8 +36,13 @@ fields become zero **only** in this legacy response, counted in `X-Zero-Placehol
 The exact source record and missing fields remain available from `/api/records`.
 TradingView volume is never relabeled as monetary value just to resemble a sample.
 
-TradingView supports `1m`, `5m`, `15m`, `1h`, `1d`; larger intervals aggregate only
-stored native minutes. Missing minutes are never filled. A sparse/partial bucket
+TradingView collects native `1m`, `5m`, `15m`, `1d`; `1h` aggregates stored minutes.
+`source=auto` (default) uses native rows when present in the requested range, otherwise
+falls back to minute aggregation. It never mixes both within one response.
+Use `source=native` to require native rows (empty if unavailable), or
+`source=aggregate` to explicitly request the old UTC minute aggregation.
+`X-Bar-Source` identifies the selection and is exposed to browsers. Native daily
+timestamps preserve provider session boundaries, which may differ from UTC midnight. Missing minutes are never filled. A sparse/partial bucket
 does not prove complete coverage. TSETMC supports native `1d` only; dates are
 labeled at UTC midnight, not presented as exchange event instants. Official close
 may differ from last trade and can lie outside the executed high/low range.
@@ -115,3 +120,10 @@ A quote without a source event timestamp cannot replace an already dated quote.
 It can be stored initially if no dated quote exists. Older source timestamps
 also cannot replace newer ones. `/api/latest` remains the latest accepted stored
 observation, not an on-demand provider request. Check its event and receipt ages.
+
+
+`/api/records` also accepts native `5m` and `15m`. `/api/coverage` still
+measures TradingView **1m** storage only; it is not higher-timeframe coverage.
+Native daily completion is conservative: the last returned provider bar is excluded,
+and accepted starts must be at least 24 hours old. Provider session finality is not
+independently verified, particularly around closures and daylight-saving changes.

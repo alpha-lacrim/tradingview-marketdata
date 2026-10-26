@@ -9,7 +9,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import asyncpg
 from fastapi import FastAPI, HTTPException, Query, Request, Response, WebSocket, WebSocketDisconnect
@@ -107,6 +107,7 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
             "X-Zero-Placeholders",
             "X-Partial-Buckets",
             "X-Coverage-Status",
+            "X-Bar-Source",
         ],
     )
     app.state.store = db
@@ -211,23 +212,39 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         market: Market,
         symbol: Symbol,
         interval: str | None = None,
+        source: Literal["auto", "native", "aggregate"] = "auto",
         start: int | None = None,
         end: int | None = None,
     ) -> dict[str, Any]:
         interval = interval or ("1d" if market == "tsetmc" else "1m")
         if interval not in STEPS or (market == "tsetmc" and interval != "1d"):
             raise HTTPException(422, "supported intervals: TradingView 1m/5m/15m/1h/1d; TSETMC 1d")
+        if source == "native" and interval == "1h":
+            raise HTTPException(422, "native 1h is not collected; use source=aggregate")
         now = datetime.now(UTC)
         end = end if end is not None else int(now.timestamp()) + 1
         start = start if start is not None else int((now - timedelta(days=30)).timestamp())
         if not 0 <= start < end <= 32503680000:
             raise HTTPException(422, "use start < end in Unix seconds (end exclusive)")
-        native = "1d" if market == "tsetmc" else "1m"
+        native = (
+            "1d"
+            if market == "tsetmc"
+            else (
+                interval
+                if interval in {"1m", "5m", "15m", "1d"} and source != "aggregate"
+                else "1m"
+            )
+        )
         rows = await db.rows(market, symbol, native, start, end, 100001)
+        if not rows and market == "tradingview" and source == "auto" and native != "1m":
+            native = "1m"
+            rows = await db.rows(market, symbol, native, start, end, 100001)
+        is_native = native == interval
+        response.headers["X-Bar-Source"] = "native" if is_native else "aggregate"
         if len(rows) > 100000:
             raise HTTPException(413, "range exceeds 100000 native bars; request a shorter range")
         try:
-            result, missing, placeholders = chart(rows, STEPS[interval])
+            result, missing, placeholders = chart(rows, 1 if is_native else STEPS[interval])
         except ValueError:
             raise HTTPException(
                 422, "stored values cannot be represented by dashboard float64/int64"
@@ -238,7 +255,7 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         for row in rows:
             if all(row["data"][key] is not None for key in ("open", "close", "high", "low")):
                 counts[row["time"] // STEPS[interval]] += 1
-        expected = STEPS[interval] // (86400 if market == "tsetmc" else 60)
+        expected = STEPS[interval] // STEPS[native]
         response.headers["X-Partial-Buckets"] = str(sum(n < expected for n in counts.values()))
         response.headers["X-Coverage-Status"] = "unverified"
         return result
@@ -268,7 +285,11 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         end: int = 32503680000,
         limit: int = Query(1000, ge=1, le=5000),
     ) -> dict[str, Any]:
-        if interval not in {"1m", "1d", "quote"} or not 0 <= start < end:
+        if (
+            interval not in {"1m", "5m", "15m", "1d", "quote"}
+            or (market == "tsetmc" and interval not in {"1d", "quote"})
+            or not 0 <= start < end
+        ):
             raise HTTPException(422, "invalid native interval or range")
         rows = await db.rows(market, symbol, interval, start, end, limit + 1)
         return {

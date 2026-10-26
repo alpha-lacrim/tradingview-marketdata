@@ -80,10 +80,12 @@ Select another existing registry with `--registry config/instruments.tradingview
 The configured limit is 100 sources. Symbols in the API are exact provider symbols,
 for example `BINANCE:BTCUSDT`, `OANDA:EURUSD` and `FX:EURUSD` remain distinct.
 
-The collector fetches completed native 1-minute bars, revisits recent bars for
+The collector fetches native 1m, 5m, 15m and 1d candles separately, revisits recent bars for
 corrections, and refreshes its available history hourly. Initial/restart recovery
-requests up to 4,999 minutes (83 hours 19 minutes); `--history-minutes` can reduce
-that bound, for example `--history-minutes 1440` restores the old window. Upstream
+requests up to 4,999 bars per interval: approximately 83 hours for 1m, 17 days for
+5m, 52 days for 15m, and 13.7 calendar years for 1d. These are requested time spans,
+not guaranteed provider availability. `--history-bars` reduces the bound; the old
+`--history-minutes` flag remains an alias for that per-interval count. Upstream
 omissions and history beyond this horizon are not synthesized. Persisted company
 history accumulates over time. Quotes use a separate stream and send latest
 snapshots approximately every five seconds; this is not an archive of every tick.
@@ -96,7 +98,7 @@ The default pending-file directory is `.local/simple-tradingview/`; `--state-dir
 selects another durable directory. Only one collector may own a given directory.
 If uploads fail, the pending batch stays on disk and new history acquisition waits.
 An outage longer than the available provider history can leave an unrecoverable gap.
-The native default requests at most 5,000 bars, reserving one for the forming minute.
+The native default requests at most 5,000 bars, reserving one for the potentially forming bar.
 Requests use a 30-second timeout and groups of ten sources to bound recovery memory.
 This is a request window, not a guarantee that every source has all those minutes.
 Restart the collector to use the new default; an explicit --history-minutes overrides it.
@@ -247,3 +249,16 @@ Unexpected programming errors remain visible rather than being hidden by retries
 TSETMC retries temporary network/DNS/timeout/server failures during its initial
 identity lookup. It drains already staged uploads first. Invalid identities and
 access-denied responses still stop; it never bypasses source qualification.
+
+
+## Native timeframe update
+
+Restart the API **before** the updated TradingView collector: the old API rejects
+new native intervals. No database migration/reset is required. Default intervals
+are 1m 5m 15m 1d. `--intervals 1m` retains minute-only collection;
+`--intervals 5m 15m 1d` selects only higher intervals. One chart socket is used at
+a time, processing each interval in sequence; quotes retain a separate connection.
+Initial full history across 100 feeds/four intervals can take substantially longer
+than minute-only startup. Refresh sweeps overlap 30 bars and full history hourly.
+Daily timestamps preserve source session offsets. Restart both processes using
+the same state directories; never discard pending uploads.

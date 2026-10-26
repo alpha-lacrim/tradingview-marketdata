@@ -16,7 +16,7 @@ class Observation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     market: Market
     symbol: str = Field(min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_:.-]+$")
-    interval: Literal["1m", "1d", "quote"]
+    interval: Literal["1m", "5m", "15m", "1d", "quote"]
     time: int = Field(ge=0, le=32503680000, strict=True)
     received_at: AwareDatetime
     event_at: AwareDatetime | None = None
@@ -66,7 +66,9 @@ class Observation(BaseModel):
             ):
                 raise ValueError("quote requires time=0 and an observed price")
         else:
-            step = 60 if self.interval == "1m" else 86400
+            step = {"1m": 60, "5m": 300, "15m": 900, "1d": 86400}[self.interval]
+            if self.market == "tradingview" and self.interval == "1d":
+                step = 60  # Preserve provider session timestamps, not UTC day aggregation.
             if self.time % step:
                 raise ValueError("bar timestamp must align to its UTC interval")
             if self.high is not None and self.low is not None and self.high < self.low:
@@ -78,7 +80,9 @@ class Observation(BaseModel):
                 ):
                     raise ValueError("OHLC is outside the trading range")
         if self.market == "tsetmc" and (
-            not self.symbol.isascii() or not self.symbol.isdigit() or self.interval == "1m"
+            not self.symbol.isascii()
+            or not self.symbol.isdigit()
+            or self.interval not in {"1d", "quote"}
         ):
             raise ValueError("TSETMC requires native insCode and daily history")
         if self.market == "tsetmc":
@@ -120,8 +124,6 @@ class Observation(BaseModel):
                 raise ValueError(
                     "TSETMC source clock exceeds receive time by more than five minutes"
                 )
-        if self.market == "tradingview" and self.interval == "1d":
-            raise ValueError("upload TradingView native 1m bars; daily bars are queried aggregates")
         return self
 
 

@@ -305,7 +305,7 @@ async def test_one_shot_reports_per_source_failure(monkeypatch, tmp_path, perman
     monkeypatch.setattr(
         collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: [pair])
     )
-    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_: Provider())
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_, **__: Provider())
     args = SimpleNamespace(
         registry=None,
         history_minutes=30,
@@ -377,7 +377,7 @@ async def test_history_handshake_eof_retries_without_stopping_collector(
     monkeypatch.setattr(
         collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: [pair])
     )
-    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_: Provider())
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_, **__: Provider())
     monkeypatch.setattr(collector, "TradingViewGuestProvider", lambda *_: Quotes())
     monkeypatch.setattr(collector.asyncio, "sleep", sleep)
     args = SimpleNamespace(
@@ -566,7 +566,10 @@ def test_coverage_reports_absence_without_inventing_market_sessions():
     assert coverage([], 1, 59, 60)["unobserved_ranges"] == []
 
 
-async def test_extended_history_is_bounded_and_split_into_small_requests(monkeypatch, tmp_path):
+@pytest.mark.parametrize("interval", ["1m", "5m", "15m", "1d"])
+async def test_extended_history_is_bounded_and_split_into_small_requests(
+    monkeypatch, tmp_path, interval
+):
     from types import SimpleNamespace
 
     from marketdata import simple_collector as collector
@@ -598,11 +601,12 @@ async def test_extended_history_is_bounded_and_split_into_small_requests(monkeyp
     monkeypatch.setattr(
         collector.Registry, "load", lambda _: SimpleNamespace(subscriptions=lambda _: pairs)
     )
-    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_: Provider())
+    monkeypatch.setattr(collector, "TradingViewCandleProvider", lambda *_, **__: Provider())
     await collector.run(
         SimpleNamespace(
             registry=None,
             history_minutes=MAX_HISTORY_MINUTES,
+            intervals=[interval],
             api_url="http://localhost:8000",
             state_dir=tmp_path,
             once=True,
@@ -611,7 +615,9 @@ async def test_extended_history_is_bounded_and_split_into_small_requests(monkeyp
     assert [len(batch) for batch in batches] == [10, 10, 3]
     for batch in batches:
         for _, start, end, count in batch:
-            assert end - start == timedelta(minutes=4999)
+            assert end - start == timedelta(
+                minutes=4999 * {"1m": 1, "5m": 5, "15m": 15, "1d": 1440}[interval]
+            )
             assert count == 5000
 
 
@@ -634,3 +640,31 @@ async def test_chart_partial_bucket_and_coverage_api(native_store):
         assert result["unobserved_ranges"] == [
             {"start": row["time"] + 60, "end": row["time"] + 300}
         ]
+
+
+@pytest.mark.parametrize("interval,seconds", [("5m", 300), ("15m", 900), ("1d", 86400)])
+async def test_native_timeframes_persist_and_preserve_source_timestamp(
+    native_store, interval, seconds
+):
+    stamp = 1784246400 + (21 * 3600 if interval == "1d" else 0)
+    row = dict(observation(), interval=interval, time=stamp)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(create_app(store=native_store)), base_url="http://company"
+    ) as http:
+        assert (await http.post("/api/ingest", content=body([row]))).status_code == 200
+        params = dict(
+            market="tradingview",
+            symbol=row["symbol"],
+            interval=interval,
+            start=stamp,
+            end=stamp + seconds,
+            source="native",
+        )
+        response = await http.get("/api/chart", params=params)
+        assert response.status_code == 200
+        assert response.json()["a"] == [stamp]
+        assert response.headers["X-Bar-Source"] == "native"
+        params["source"] = "aggregate"
+        assert (await http.get("/api/chart", params=params)).json()["a"] == []
+    with pytest.raises(ValidationError):
+        Observation.model_validate(dict(row, market="tsetmc", symbol="123", interval="5m"))

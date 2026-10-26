@@ -545,3 +545,19 @@ def test_native_candle_rest_latest_and_websocket(database_url, store, monkeypatc
             client.portal.call(app_service.fanout.publish, candle)
             msg = ws.receive_json()
             assert msg["type"] == "candle" and msg["persisted"] and msg["price_basis"] == "native"
+
+
+@pytest.mark.parametrize("interval,minutes", [("5m", 5), ("15m", 15), ("1d", 1440)])
+def test_native_interval_parser_uses_source_timestamp_and_duration(interval, minutes):
+    row = captured()[0]
+    pair = next(
+        p
+        for p in Registry.load(REGISTRY).subscriptions("tradingview_guest")
+        if p[1].provider_symbol == row["symbol"]
+    )
+    values = vectors(row)[0]["v"]
+    received = datetime.fromisoformat(row["observed_at"]) + timedelta(days=2)
+    result = parse_bar(values, pair, source(row), received, "streaming", interval)
+    assert result.interval == interval
+    assert int(result.bucket_start.timestamp()) == int(values[0])
+    assert result.bucket_end - result.bucket_start == timedelta(minutes=minutes)

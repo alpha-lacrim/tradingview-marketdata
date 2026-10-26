@@ -118,3 +118,31 @@ skipped; separate native PostgreSQL suite 39 passed on disposable port56052.
 Ruff and mypy passed. Large-frame acceptance/rejection, 4999-minute bounds and
 23-source grouping (10/10/3) have regression tests. Graph rebuilt; optional SQL
 parser is still absent. No changes were needed in the TSETMC repository.
+
+## Native higher timeframes (2026-10-26)
+
+Native collector now defaults to 1m/5m/15m/1d, separately persisted by interval.
+--intervals selects a subset; --history-bars (old --history-minutes alias) is
+30..4999 bars per interval. One chart connection at a time, sequential interval
+sweeps; quote connection independent. Full refresh hourly, overlap30 bars.
+Large first sweeps may delay minute history updates; quote delivery is independent.
+No schema change; API must restart before collector to accept new intervals.
+
+Chart source=auto prefers native rows for the requested range, falling back to
+minute aggregation only if none exist. No mixed source within one response.
+source=native and source=aggregate are explicit overrides; X-Bar-Source exposed.
+1h remains aggregated. Native daily source timestamps preserved (FX observed21Z),
+not rounded to UTC midnight. Conservative daily filter excludes last provider bar
+and requires start+24h <= cutoff; exact session finality remains unverified.
+/api/coverage still measures only native minute TradingView rows.
+
+Live small read-only probes accepted 5m/15m/1d for BTC, OANDA EURUSD, FX EURUSD.
+No HTML scraping: direct guest chart/quote WebSocket messages, as documented in
+docs/tradingview.md. Guest protocol remains experimental; no account access bypass.
+TSETMC diagnostic capture is implemented in companion repo; invalid-history upload
+policy remains unchanged pending user's inspection of real flagged source values.
+
+Verification: company full suite575 passed365 skipped against disposable native
+PostgreSQL; after final scheduler/parameterized checks, targeted suite132 passed10
+skipped. Ruff/mypy/format passed. Source suite318 passed119 skipped. Live interval
+probes were read-only and bounded, not all100 long-duration qualification.
