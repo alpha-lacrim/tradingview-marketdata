@@ -89,6 +89,8 @@ async def run(args: argparse.Namespace) -> None:
     pairs = Registry.load(args.registry).subscriptions("tradingview_guest")
     if not 1 <= len(pairs) <= 100:
         raise ValueError("registry must contain 1..100 TradingView sources")
+    pairs = pairs[:4]
+    print(f"Collecting {len(pairs)} instruments (temporary limit: 4)", flush=True)
     settings = Settings(
         _env_file=None,  # type: ignore[call-arg]
         candle_backfill_minutes=args.history_minutes,
@@ -292,7 +294,7 @@ def main() -> None:
     parser.add_argument(
         "--registry",
         type=Path,
-        default=Path("config/instruments.tradingview-native100.json"),
+        default=Path("config/instruments.tradingview-four.json"),
     )
     parser.add_argument("--state-dir", type=Path, default=Path(".local/simple-tradingview"))
     parser.add_argument(

@@ -29,11 +29,10 @@ b=open, c=close, d=high, e=low, f=count, g=volume, h=value, i=null. Latest price
 exact records, corrections and WebSockets use the same service. PostgreSQL retains
 exact decimal strings in JSONB; only the legacy chart response converts to float64.
 
-TradingView collects native 1-minute bars and latest quote snapshots. The default
-100-source registry is provisional; actual availability must be checked. Recovery
-is limited to the provider's available history (up to 1,440 minutes requested).
-TSETMC defaults to a fixed 100-share watchlist without live discovery,
-with native daily history and paced current-price sweeps. See
+Both collectors are temporarily limited to four instruments. TradingView collects
+native 1m/5m/15m/1d bars (up to 4,999 per interval requested) and quote snapshots.
+TSETMC collects daily history, current prices and trade-derived 1m candles with
+5m/15m API aggregation. See [update steps and intraday limits](docs/native-intraday.md) and
 [coverage and instrument list](docs/native-instruments.md). Neither
 transport success nor a configured symbol proves complete or real-time coverage.
 

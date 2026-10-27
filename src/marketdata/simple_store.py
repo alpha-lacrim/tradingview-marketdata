@@ -51,6 +51,11 @@ class SimpleStore:
         )
         if await self.pool.fetchval("SELECT version FROM simple_marketdata.version") != 1:
             raise RuntimeError("run marketdata-simple init for this database")
+        if (
+            await self.pool.fetchval("SELECT to_regclass('simple_marketdata.intraday_snapshots')")
+            is None
+        ):
+            raise RuntimeError("run marketdata-simple init to add intraday snapshot support")
 
     @asynccontextmanager
     async def connection(self) -> AsyncIterator[asyncpg.pool.PoolConnectionProxy[Any]]:
@@ -76,6 +81,44 @@ class SimpleStore:
                 if existing["sha256"] != digest:
                     raise ValueError("batch_id already used for different bytes")
             else:
+                apply_snapshot = True
+                if batch.snapshot:
+                    s = batch.snapshot
+                    apply_snapshot = (
+                        await conn.fetchval(
+                            """INSERT INTO simple_marketdata.intraday_snapshots AS old
+                        VALUES($1,$2,$3,$4,$5)
+                        ON CONFLICT(market,symbol,interval,trading_date) DO UPDATE
+                        SET received_at=excluded.received_at
+                        WHERE excluded.received_at > old.received_at
+                        RETURNING true""",
+                            s.market,
+                            s.symbol,
+                            s.interval,
+                            s.trading_date,
+                            s.received_at,
+                        )
+                        is True
+                    )
+                    if apply_snapshot and s.reconciled:
+                        start, end = s.bounds()
+                        # Retain a tombstone and its previous value in the ordinary change log.
+                        await conn.execute(
+                            """UPDATE simple_marketdata.records
+                            SET data=jsonb_build_object('deleted',true), received_at=$6,
+                                stored_at=clock_timestamp()
+                            WHERE market=$1 AND symbol=$2 AND interval=$3
+                            AND time >= $4 AND time < $5 AND received_at < $6
+                            AND NOT(time=ANY($7::bigint[]))
+                            AND data->>'deleted' IS DISTINCT FROM 'true'""",
+                            s.market,
+                            s.symbol,
+                            s.interval,
+                            start,
+                            end,
+                            s.received_at,
+                            [o.time for o in batch.observations],
+                        )
                 values = []
                 for o in batch.observations:
                     data = o.model_dump(
@@ -91,7 +134,8 @@ class SimpleStore:
                             json.dumps(data, allow_nan=False),
                         )
                     )
-                await conn.executemany(UPSERT, values)
+                if apply_snapshot:
+                    await conn.executemany(UPSERT, values)
                 await conn.execute(
                     "INSERT INTO simple_marketdata.receipts VALUES($1,$2,$3,DEFAULT)",
                     batch.batch_id,
@@ -112,6 +156,7 @@ class SimpleStore:
             records = await conn.fetch(
                 """SELECT * FROM simple_marketdata.records
                 WHERE market=$1 AND symbol=$2 AND interval=$3 AND time >= $4 AND time < $5
+                AND data->>'deleted' IS DISTINCT FROM 'true'
                 ORDER BY time LIMIT $6""",
                 market,
                 symbol,

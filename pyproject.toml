@@ -17,6 +17,7 @@ dependencies = [
   "prometheus-client>=0.21,<1",
   "anyio>=4,<5",
   "jsonschema>=4.23,<5",
+  "tzdata>=2025.2",
 ]
 
 [project.scripts]

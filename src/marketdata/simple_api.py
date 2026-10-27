@@ -176,6 +176,7 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
                 max(received_at) AS last_received_at
                 FROM simple_marketdata.records
                 WHERE ($1::text IS NULL OR market=$1)
+                AND data->>'deleted' IS DISTINCT FROM 'true'
                 GROUP BY market,symbol ORDER BY market,symbol LIMIT $2 OFFSET $3)
                 SELECT s.*,coalesce(q.data->'metadata'->>'display_name',s.symbol) AS display_name
                 FROM selected s LEFT JOIN simple_marketdata.records q
@@ -217,8 +218,14 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         end: int | None = None,
     ) -> dict[str, Any]:
         interval = interval or ("1d" if market == "tsetmc" else "1m")
-        if interval not in STEPS or (market == "tsetmc" and interval != "1d"):
-            raise HTTPException(422, "supported intervals: TradingView 1m/5m/15m/1h/1d; TSETMC 1d")
+        if interval not in STEPS or (market == "tsetmc" and interval == "1h"):
+            raise HTTPException(
+                422, "supported intervals: TradingView 1m/5m/15m/1h/1d; TSETMC 1m/5m/15m/1d"
+            )
+        if market == "tsetmc" and source == "native" and interval in {"5m", "15m"}:
+            raise HTTPException(
+                422, "TSETMC 5m/15m are derived from trade minutes; use source=auto"
+            )
         if source == "native" and interval == "1h":
             raise HTTPException(422, "native 1h is not collected; use source=aggregate")
         now = datetime.now(UTC)
@@ -227,7 +234,7 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
         if not 0 <= start < end <= 32503680000:
             raise HTTPException(422, "use start < end in Unix seconds (end exclusive)")
         native = (
-            "1d"
+            ("1d" if interval == "1d" else "1m")
             if market == "tsetmc"
             else (
                 interval
@@ -262,15 +269,19 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
 
     @app.get("/api/coverage")
     async def history_coverage(
-        market: Market, symbol: Symbol, start: int, end: int
+        market: Market,
+        symbol: Symbol,
+        start: int,
+        end: int,
+        interval: Literal["1m", "1d"] | None = None,
     ) -> dict[str, Any]:
         if not 0 <= start < end <= 32503680000:
             raise HTTPException(422, "use start < end in Unix seconds")
-        native = "1d" if market == "tsetmc" else "1m"
+        native = interval or ("1d" if market == "tsetmc" else "1m")
         rows = await db.rows(market, symbol, native, start, end, 100001)
         if len(rows) > 100000:
             raise HTTPException(413, "request a shorter range")
-        result = coverage(rows, start, end, 86400 if market == "tsetmc" else 60)
+        result = coverage(rows, start, end, STEPS[native])
         result["collector_max_recovery_minutes"] = (
             MAX_HISTORY_MINUTES if market == "tradingview" else None
         )
@@ -287,7 +298,7 @@ def create_app(database_url: str | None = None, *, store: SimpleStore | None = N
     ) -> dict[str, Any]:
         if (
             interval not in {"1m", "5m", "15m", "1d", "quote"}
-            or (market == "tsetmc" and interval not in {"1d", "quote"})
+            or (market == "tsetmc" and interval not in {"1m", "1d", "quote"})
             or not 0 <= start < end
         ):
             raise HTTPException(422, "invalid native interval or range")

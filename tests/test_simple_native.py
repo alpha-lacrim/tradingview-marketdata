@@ -85,7 +85,8 @@ def test_tsetmc_official_close_can_exceed_executed_range():
         Observation.model_validate(raw)
 
 
-async def test_durable_upload_retry_and_receipt_validation(tmp_path):
+@pytest.mark.parametrize("intraday", [False, True])
+async def test_durable_upload_retry_and_receipt_validation(tmp_path, intraday):
     uploads = []
 
     async def respond(request):
@@ -105,7 +106,11 @@ async def test_durable_upload_retry_and_receipt_validation(tmp_path):
     path = tmp_path / "pending.json"
     async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
         pending = PendingUpload("http://company:8000", path, client)
-        pending.stage([observation()])
+        if intraday:
+            batch = intraday_batch()
+            pending.stage(batch["observations"], snapshot=batch["snapshot"])
+        else:
+            pending.stage([observation()])
         with pytest.raises(httpx.ReadTimeout):
             await pending.flush()
         assert path.exists()
@@ -115,6 +120,7 @@ async def test_durable_upload_retry_and_receipt_validation(tmp_path):
             await PendingUpload("http://other", path, client).flush()
         await PendingUpload("http://company:8000", path, client).flush()
         assert uploads[0] == uploads[1] and not path.exists()
+        assert ("snapshot" in json.loads(uploads[0])) is intraday
         pending.stage([observation()])
         with pytest.raises(ValueError, match="receipt"):
             async with httpx.AsyncClient(
@@ -152,7 +158,8 @@ async def native_store():
     await store.connect()
     try:
         await store.pool.execute("""TRUNCATE simple_marketdata.records,
-            simple_marketdata.changes,simple_marketdata.receipts RESTART IDENTITY""")
+            simple_marketdata.changes,simple_marketdata.receipts,
+            simple_marketdata.intraday_snapshots RESTART IDENTITY""")
         yield store
     finally:
         await store.close()
@@ -567,7 +574,7 @@ def test_coverage_reports_absence_without_inventing_market_sessions():
 
 
 @pytest.mark.parametrize("interval", ["1m", "5m", "15m", "1d"])
-async def test_extended_history_is_bounded_and_split_into_small_requests(
+async def test_extended_history_is_bounded_and_capped_at_four_instruments(
     monkeypatch, tmp_path, interval
 ):
     from types import SimpleNamespace
@@ -612,7 +619,7 @@ async def test_extended_history_is_bounded_and_split_into_small_requests(
             once=True,
         )
     )
-    assert [len(batch) for batch in batches] == [10, 10, 3]
+    assert [len(batch) for batch in batches] == [4]
     for batch in batches:
         for _, start, end, count in batch:
             assert end - start == timedelta(
@@ -733,3 +740,144 @@ async def test_recent_preview_is_followed_by_full_tradingview_recovery(monkeypat
     assert requests[0][3] == 31
     assert requests[1][3] == 301
     assert requests[1][2] - requests[1][1] == timedelta(minutes=300)
+
+
+def intraday_batch(stamp="2026-10-26T12:00:00Z", *, empty=False):
+    rows = [
+        dict(
+            observation(),
+            market="tsetmc",
+            symbol="123",
+            time=1792906200 + offset,
+            received_at=stamp,
+            open="10",
+            close="12",
+            high="12",
+            low="10",
+            count=2,
+            volume="3",
+            value="34",
+        )
+        for offset in (0, 360)
+    ]
+    return dict(
+        batch_id=str(uuid4()),
+        observations=[] if empty else rows,
+        snapshot=dict(
+            market="tsetmc",
+            symbol="123",
+            interval="1m",
+            trading_date="2026-10-25",
+            received_at=stamp,
+        ),
+    )
+
+
+@pytest.mark.parametrize("mutation", ["symbol", "day", "received", "missing", "scope", "future"])
+def test_intraday_snapshot_contract_rejects_incomplete_or_mixed_days(mutation):
+    from marketdata.simple_models import Batch
+
+    batch = intraday_batch()
+    if mutation == "symbol":
+        batch["observations"][0]["symbol"] = "456"
+    elif mutation == "day":
+        batch["observations"][0]["time"] -= 86400
+    elif mutation == "received":
+        batch["observations"][0]["received_at"] = "2026-10-26T11:00:00Z"
+    elif mutation == "missing":
+        batch["observations"][0].pop("value")
+    elif mutation == "future":
+        batch["snapshot"]["trading_date"] = "9999-12-31"
+    else:
+        batch.pop("snapshot")
+    with pytest.raises(ValidationError):
+        Batch.model_validate(batch)
+
+
+async def test_intraday_atomic_replacement_tombstones_stale_retries_and_charts(native_store):
+    app = create_app(store=native_store)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app), base_url="http://company"
+    ) as http:
+        first = intraday_batch()
+        assert (await http.post("/api/ingest", json=first)).status_code == 200
+        params = dict(market="tsetmc", symbol="123", start=1792906200, end=1792992600)
+        for interval, count in [("1m", 2), ("5m", 2), ("15m", 1)]:
+            result = await http.get("/api/chart", params=dict(params, interval=interval))
+            assert result.status_code == 200
+            assert len(result.json()["a"]) == count
+            assert sum(result.json()["g"]) == 6
+            assert sum(result.json()["h"]) == 68
+        corrected = intraday_batch("2026-10-26T13:00:00Z")
+        corrected["observations"].pop()
+        receipt = await http.post("/api/ingest", json=corrected)
+        assert receipt.status_code == 200
+        assert (await http.post("/api/ingest", json=corrected)).json() == receipt.json()
+        changes = (
+            await http.get("/api/changes", params=dict(market="tsetmc", symbol="123"))
+        ).json()["items"]
+        assert len(changes) == 3 and changes[-1]["data"] == {"deleted": True}
+        # A distinct older batch must not resurrect the cancelled minute.
+        first["batch_id"] = str(uuid4())
+        assert (await http.post("/api/ingest", json=first)).status_code == 200
+        result = await http.get("/api/chart", params=dict(params, interval="1m"))
+        assert len(result.json()["a"]) == 1
+        provisional = intraday_batch("2026-10-26T13:30:00Z")
+        provisional["observations"] = [provisional["observations"][1]]
+        provisional["observations"][0]["metadata"] = {"finality": "provisional"}
+        provisional["snapshot"]["reconciled"] = False
+        assert (await http.post("/api/ingest", json=provisional)).status_code == 200
+        # A partial current snapshot never erases an absent minute.
+        assert (
+            len((await http.get("/api/chart", params=dict(params, interval="1m"))).json()["a"]) == 2
+        )
+        empty = intraday_batch("2026-10-26T14:00:00Z", empty=True)
+        assert (await http.post("/api/ingest", json=empty)).status_code == 200
+        assert (await http.get("/api/chart", params=dict(params, interval="1m"))).json()["a"] == []
+        records = await http.get("/api/records", params=dict(params, interval="1m"))
+        assert records.json()["items"] == []
+        # The watermark survives even when the entire day is empty.
+        first["batch_id"] = str(uuid4())
+        await http.post("/api/ingest", json=first)
+        assert (await http.get("/api/chart", params=dict(params, interval="1m"))).json()["a"] == []
+        restored = intraday_batch("2026-10-26T15:00:00Z")
+        await http.post("/api/ingest", json=restored)
+        assert (
+            len((await http.get("/api/chart", params=dict(params, interval="1m"))).json()["a"]) == 2
+        )
+        assert (await http.get("/api/chart", params=dict(params, interval="1d"))).json()["a"] == []
+        coverage = await http.get("/api/coverage", params=dict(params, interval="1m"))
+        assert coverage.json()["stored_bars"] == 2
+        assert coverage.json()["native_step_seconds"] == 60
+        assert (
+            await native_store.pool.fetchval(
+                "SELECT count(*) FROM simple_marketdata.changes WHERE previous IS NOT NULL"
+            )
+            == 6
+        )
+
+
+async def test_empty_snapshot_watermark_blocks_late_first_delivery(native_store):
+    from marketdata.simple_models import Batch
+
+    empty = intraday_batch("2026-10-26T14:00:00Z", empty=True)
+    await native_store.ingest(Batch.model_validate(empty), json.dumps(empty).encode())
+    older = intraday_batch()
+    await native_store.ingest(Batch.model_validate(older), json.dumps(older).encode())
+    assert await native_store.rows("tsetmc", "123", "1m", 0, 2000000000, 10) == []
+
+
+def test_four_feed_registry_covers_requested_market_categories():
+    from pathlib import Path
+
+    from marketdata.registry import Registry
+
+    pairs = Registry.load(Path("config/instruments.tradingview-four.json")).subscriptions(
+        "tradingview_guest"
+    )
+    assert [pair[1].provider_symbol for pair in pairs] == [
+        "BINANCE:BTCUSDT",
+        "OANDA:EURUSD",
+        "OANDA:XAUUSD",
+        "OANDA:WTICOUSD",
+    ]

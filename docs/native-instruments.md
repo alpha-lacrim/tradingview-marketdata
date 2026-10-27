@@ -1,8 +1,15 @@
 # Native instrument expansion - 22 October 2026
 
-## TradingView: 100 source feeds
+## Current temporary cap: four per collector
 
-The native collector now defaults to `config/instruments.tradingview-native100.json`.
+The native commands now cap every registry/watchlist at four instruments.
+TradingView defaults to `instruments.tradingview-four.json`; TSETMC uses the first
+four packaged shares. Existing data is retained. See [current rollout](native-intraday.md).
+The larger lists and historical qualification below remain for future expansion.
+
+## TradingView: retained 100-source registry
+
+The larger retained registry is `config/instruments.tradingview-native100.json`.
 Existing 34/99/accuracy-selected registries and stored history are unchanged. Passing
 `--registry config/instruments.tradingview-pilot.json` still selects only 34 feeds.
 The new list has 50 Binance spot USDT pairs, 21 OANDA forex pairs, the same 21 FXCM
@@ -50,9 +57,9 @@ proof of it. Private reports are under `.local/expansion-20261022/`.
 This short check does not guarantee sustained availability, complete history or
 permission beyond the existing access gates. The guest protocol remains experimental.
 
-## TSETMC: fixed top100 default; optional broader discovery
+## TSETMC: retained top100 shortlist
 
-The companion collector now defaults to a packaged fixed100 watchlist, selected by
+The companion collector retains a packaged fixed100 shortlist, selected by
 reported traded value from a dated snapshot, not an official index. Default startup
 does not call market watch, which can return empty responses. See the source repo
 `docs/top100.md` for the named list and checks. Remove `--all-shares` from old commands.

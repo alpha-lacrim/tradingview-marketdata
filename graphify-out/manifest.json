@@ -1452,9 +1452,9 @@
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1792609969.9821281,
-    "seen": 1792647783.7095928,
-    "ast_hash": "6fe20e7b858f40b55a401c0361c3e749",
+    "mtime": 1793084940.77844,
+    "seen": 1793086072.0184789,
+    "ast_hash": "336a6417e1db0cceee5c11e863d1914e",
     "semantic_hash": ""
   },
   "release/v1.1/collector/collector.example.json": {
@@ -2718,15 +2718,15 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793018198.7728128,
-    "seen": 1793018269.0042422,
-    "ast_hash": "df72a2b23fa998c17169ef70bb979248",
+    "mtime": 1793086050.926765,
+    "seen": 1793086072.0464382,
+    "ast_hash": "65a0198b80a843498f7930bdc73d705b",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792694051.8605893,
-    "seen": 1792940914.772866,
-    "ast_hash": "17b41f53df38607dadae4c460408020d",
+    "mtime": 1793085809.1581209,
+    "seen": 1793086072.0464382,
+    "ast_hash": "1bbece4e1220b9c8adc73718418e0b48",
     "semantic_hash": ""
   },
   "compose.api.yaml": {
@@ -3522,9 +3522,9 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_api.py": {
-    "mtime": 1792998878.5481331,
-    "seen": 1792999187.6814842,
-    "ast_hash": "f7ba994507e71df76447157c3f0198a2",
+    "mtime": 1793020562.5522878,
+    "seen": 1793086072.0330172,
+    "ast_hash": "53f492b556aca30a1e30c611b54803c1",
     "semantic_hash": ""
   },
   "src/marketdata/simple_cli.py": {
@@ -3534,33 +3534,33 @@
     "semantic_hash": ""
   },
   "src/marketdata/simple_collector.py": {
-    "mtime": 1793017793.4497743,
-    "seen": 1793018268.9742572,
-    "ast_hash": "29d57e911a47956af2b7496bd5ea2ccf",
+    "mtime": 1793020139.9788222,
+    "seen": 1793086072.0330172,
+    "ast_hash": "5f4fda327ce257e03d5ff2eb6050eaab",
     "semantic_hash": ""
   },
   "src/marketdata/simple_delivery.py": {
-    "mtime": 1793017917.7586946,
-    "seen": 1793018268.9742572,
-    "ast_hash": "d6fcaf099e49a7296575e7e115a6735f",
+    "mtime": 1793020271.2769253,
+    "seen": 1793086072.0330172,
+    "ast_hash": "4b1f51246add4364ca9abc6c86303dda",
     "semantic_hash": ""
   },
   "src/marketdata/simple_models.py": {
-    "mtime": 1792998609.1993659,
-    "seen": 1792999187.6824808,
-    "ast_hash": "cb35921c1f07139d98b8f5aa599369f2",
+    "mtime": 1793086171.9463842,
+    "seen": 1793086210.5987537,
+    "ast_hash": "76519de856aae0a8d1b73335835b50a5",
     "semantic_hash": ""
   },
   "src/marketdata/simple_store.py": {
-    "mtime": 1792940599.9317398,
-    "seen": 1792940914.7500184,
-    "ast_hash": "91f47e6db89b1822c235e8efedc18bb5",
+    "mtime": 1793085615.2216208,
+    "seen": 1793086072.0330172,
+    "ast_hash": "978b08ff85c22af17a8c75e9503e2acc",
     "semantic_hash": ""
   },
   "tests/test_simple_native.py": {
-    "mtime": 1793013910.3763618,
-    "seen": 1793013976.6885996,
-    "ast_hash": "87700f788ed2790e21a0760fc293452e",
+    "mtime": 1793086117.3248968,
+    "seen": 1793086210.6077578,
+    "ast_hash": "15a80b03c2a4ab2038517a5ac863d4e5",
     "semantic_hash": ""
   },
   ".github/workflows/native.yaml": {
@@ -3576,15 +3576,15 @@
     "semantic_hash": ""
   },
   "docs/native-dashboard.md": {
-    "mtime": 1792999045.5584,
-    "seen": 1792999187.7205667,
-    "ast_hash": "7194755f098142f98f97b67a8d8396e2",
+    "mtime": 1793085809.1581209,
+    "seen": 1793086072.0583632,
+    "ast_hash": "bca067c50d1e0769301762e2181caddb",
     "semantic_hash": ""
   },
   "docs/native-install.md": {
-    "mtime": 1793018190.6824596,
-    "seen": 1793018269.0302465,
-    "ast_hash": "af8f6e653a4d50c1fb167d80a8fd6d4c",
+    "mtime": 1793085809.1567006,
+    "seen": 1793086072.0583632,
+    "ast_hash": "463455c7d645a0ca7ac19db963e0d94a",
     "semantic_hash": ""
   },
   "docs/history/handoff-before-native-install.md": {
@@ -3612,9 +3612,9 @@
     "semantic_hash": ""
   },
   "docs/native-instruments.md": {
-    "mtime": 1792694051.8610926,
-    "seen": 1792940914.7901855,
-    "ast_hash": "583658c3a81baff9ac944249ec7fd74d",
+    "mtime": 1793085809.159128,
+    "seen": 1793086072.0583632,
+    "ast_hash": "9fba108288058d9b50e475e098effd0f",
     "semantic_hash": ""
   },
   "src/marketdata/simple_traffic.py": {
@@ -3627,6 +3627,18 @@
     "mtime": 1793017833.6257064,
     "seen": 1793018268.9992425,
     "ast_hash": "f14139315acf4598a470bc6676b0992b",
+    "semantic_hash": ""
+  },
+  "config/instruments.tradingview-four.json": {
+    "mtime": 1793020144.3625174,
+    "seen": 1793086071.9889371,
+    "ast_hash": "bc1ed6dc5b62723b8975f2bca6577ebb",
+    "semantic_hash": ""
+  },
+  "docs/native-intraday.md": {
+    "mtime": 1793085728.9938803,
+    "seen": 1793086072.0583632,
+    "ast_hash": "c26b99e644ccc20db0ce7d04196e851c",
     "semantic_hash": ""
   }
 }

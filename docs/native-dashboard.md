@@ -43,7 +43,9 @@ Use `source=native` to require native rows (empty if unavailable), or
 `source=aggregate` to explicitly request the old UTC minute aggregation.
 `X-Bar-Source` identifies the selection and is exposed to browsers. Native daily
 timestamps preserve provider session boundaries, which may differ from UTC midnight. Missing minutes are never filled. A sparse/partial bucket
-does not prove complete coverage. TSETMC supports native `1d` only; dates are
+does not prove complete coverage. TSETMC supports trade-derived `1m`, aggregated
+`5m`/`15m`, and native `1d`. See [intraday semantics and update steps](native-intraday.md).
+Intraday close is last trade; daily dates are
 labeled at UTC midnight, not presented as exchange event instants. Official close
 may differ from last trade and can lie outside the executed high/low range.
 
@@ -61,6 +63,9 @@ An absent source event time has null source age. TSETMC is not labeled real-time
 Returns exact decimal strings, nulls, source metadata and `next_start` for pagination.
 The store retains revisions; `/api/changes?market=...&symbol=...&after=CURSOR`
 returns up to 500 changes. Keep requesting from the returned cursor until empty.
+Intraday removal events have `data.deleted=true`; remove that candle or reload the
+chart. Exact records omit deleted candles. Provisional status and reconciliation
+details are available in minute-record metadata.
 
 ## WebSocket
 

@@ -1,4 +1,37 @@
-# Current state - native installation, 2026-10-22
+# Current state - native installation, 2026-10-27
+
+## Four feeds and TSETMC intraday
+
+Both native collectors cap selected instruments at four, even with larger explicit
+registries/lists. TradingView defaults to BTC/USDT and OANDA EURUSD/XAUUSD/WTICOUSD.
+TSETMC uses the first four packaged shares, derives 1m from actual trades, and the
+API aggregates 5m/15m. Daily official-close semantics stay unchanged. Larger lists
+and old stored data remain. Read docs/native-intraday.md for update instructions.
+
+Server B MUST run native `marketdata-simple init` with its existing DATABASE_URL
+after code/dependency update, then restart. This adds intraday_snapshots and startup
+checks for it. Reconciled day snapshots remove absent minutes using audited
+tombstones; provisional current snapshots upsert only. Stale snapshots cannot
+restore removed bars. Changes/WebSockets expose data.deleted=true; chart/records
+omit tombstones. Old APIs reject snapshot uploads; preserve retry files.
+
+Cancelled trades are filtered before exact duplicate rows collapse; conflicting
+duplicates reject the day. Historical trades must match daily count/volume/value
+and trade OHLC. Current summary races are provisional and cannot remove missing
+minutes. Five completed dates by default, hourly refresh, current sweep pause300s;
+restart replays bounded backfill. No full archive/finality guarantee. Coverage
+accepts interval=1m for TSETMC. Source daily/latest loops remain independent.
+
+Company full suite596 passed365 skipped against isolated PostgreSQL17; latest
+targeted suite56 passed after provisional/tombstone changes. Companion full suite
+346 passed119 skipped. Ruff/format/mypy and builds passed. Live isolated flow used
+both real collectors and FastAPI/PostgreSQL: all four TV feeds served1m/5m/15m/1d;
+all four TSETMC shares served daily and1m/5m/15m (320..421 minute rows in this test),
+plus latest quotes. Source502s and empty recent archives prevented complete recovery;
+continuous mode retries. Evidence: ignored .local/intraday-flow-20261027/.
+Existing user databases/processes and employer deployment were not changed.
+
+## Earlier native implementation context
 
 One FastAPI/company PostgreSQL, two direct HTTP collectors, durable retry files.
 No Docker or source database required. Open API/CORS and optional upload token are

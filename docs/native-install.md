@@ -9,7 +9,7 @@ TradingView collector --HTTP--\
 TSETMC collector -----HTTP--/
 ```
 
-Each collector keeps two small pending-upload files. Keep its state directory on
+Collectors keep durable pending-upload files (including TSETMC `intraday.json`). Keep their state directories on
 disk across restarts. The company commits a whole batch before acknowledging it;
 retrying the same bytes is safe. The API serves stored data while collectors are off.
 
@@ -70,14 +70,12 @@ export COMPANY_API_URL='http://SERVER:8000'
 uv run --no-sync tradingview-simple
 ```
 
-This selects `config/instruments.tradingview-native100.json`: 50 Binance spot USDT
-pairs ranked by captured TradingView 24-hour USD volume, 42 forex feeds (21 pairs
-from each of OANDA and FXCM), five metals feeds and three OANDA energy feeds.
-The frozen ranking does not rotate automatically. All 100 supplied native bars and
-accepted quotes in a bounded live check; this is not a guarantee of continuing
-availability or complete minute coverage. Failures are reported per source.
-Select another existing registry with `--registry config/instruments.tradingview-pilot.json`.
-The configured limit is 100 sources. Symbols in the API are exact provider symbols,
+This selects `config/instruments.tradingview-four.json`: BTC/USDT, OANDA EUR/USD,
+OANDA gold and OANDA WTI oil. Both native collectors are temporarily capped at four
+instruments, even when a larger registry is selected. Old data remains readable.
+See [the four-instrument/intraday rollout](native-intraday.md), including the required
+API update and explicit schema initialization before restarting TSETMC.
+Symbols in the API are exact provider symbols,
 for example `BINANCE:BTCUSDT`, `OANDA:EURUSD` and `FX:EURUSD` remain distinct.
 
 The collector fetches native 1m, 5m, 15m and 1d candles separately, revisits recent bars for
@@ -123,17 +121,17 @@ export COMPANY_API_URL='http://SERVER:8000'
 uv run --no-sync tsetmc-simple
 ```
 
-No PostgreSQL or company DB credentials are needed here. The default loads a fixed
-100-share TSETMC watchlist bundled with the source package. It does not depend on
+No PostgreSQL or company DB credentials are needed here. The default loads the first
+four shares from the fixed TSETMC watchlist bundled with the source package. It does not depend on
 market-watch discovery, which can return an empty list. Each instrument metadata
-response is still verified before collecting current prices and native daily history.
+response is still verified before collecting prices, daily history and trade-derived minutes.
 Remove `--all-shares` from older commands to select the fixed list. That flag remains
-an optional broader live-discovery mode.
+an optional live-discovery mode, still capped at four instruments.
 Use repeated `--ins-code` arguments for a smaller watchlist, e.g.
 `--ins-code 46348559193224090` retains Foolad-only operation.
 
-The client shares paced requests across both streams. Latest sweeps take minutes
-for 100 instruments (at least about 100 seconds), followed by `--poll-seconds` (15 seconds by default).
+The client shares paced requests across its streams. Latest sweeps are followed by
+`--poll-seconds` (15 seconds by default); failures/backfills can extend a sweep.
 Full history refreshes per instrument every `--history-seconds` (86400 by default);
 acknowledged history completion survives restarts. `--once` forces one full pass.
 Valid history rows upload even when other dates are flagged. Invalid/conflicting

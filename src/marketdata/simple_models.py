@@ -1,10 +1,11 @@
 """Small shared HTTP contract for the native installation; decimals stay exact on disk."""
 
 import math
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Annotated, Any, Literal, Self
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -73,7 +74,11 @@ class Observation(BaseModel):
                 raise ValueError("bar timestamp must align to its UTC interval")
             if self.high is not None and self.low is not None and self.high < self.low:
                 raise ValueError("high is below low")
-            if self.market == "tradingview" and self.high is not None and self.low is not None:
+            if (
+                (self.market == "tradingview" or self.interval != "1d")
+                and self.high is not None
+                and self.low is not None
+            ):
                 if any(
                     v is not None and not self.low <= v <= self.high
                     for v in (self.open, self.close)
@@ -82,9 +87,9 @@ class Observation(BaseModel):
         if self.market == "tsetmc" and (
             not self.symbol.isascii()
             or not self.symbol.isdigit()
-            or self.interval not in {"1d", "quote"}
+            or self.interval not in {"1m", "1d", "quote"}
         ):
-            raise ValueError("TSETMC requires native insCode and daily history")
+            raise ValueError("TSETMC requires insCode and 1m/1d/quote observations")
         if self.market == "tsetmc":
             if len(self.symbol) > 30:
                 raise ValueError("TSETMC insCode exceeds 30 digits")
@@ -127,13 +132,59 @@ class Observation(BaseModel):
         return self
 
 
+class IntradaySnapshot(BaseModel):
+    """A reconciled TSETMC day replacement or a provisional upsert-only snapshot."""
+
+    model_config = ConfigDict(extra="forbid")
+    market: Literal["tsetmc"] = "tsetmc"
+    symbol: str = Field(pattern=r"^[0-9]{1,30}$")
+    interval: Literal["1m"] = "1m"
+    trading_date: date = Field(ge=date(1970, 1, 1), le=date(2999, 12, 30))
+    received_at: AwareDatetime
+    reconciled: bool = Field(default=True, strict=True)
+
+    def bounds(self) -> tuple[int, int]:
+        zone = ZoneInfo("Asia/Tehran")
+        start = datetime.combine(self.trading_date, time(), zone)
+        return int(start.timestamp()), int((start + timedelta(days=1)).timestamp())
+
+
 class Batch(BaseModel):
     model_config = ConfigDict(extra="forbid")
     batch_id: UUID
-    observations: list[Observation] = Field(min_length=1, max_length=5000)
+    observations: list[Observation] = Field(max_length=5000)
+    snapshot: IntradaySnapshot | None = None
 
     @model_validator(mode="after")
     def unique(self) -> Self:
+        if self.snapshot:
+            s = self.snapshot
+            if not s.reconciled and not self.observations:
+                raise ValueError("an empty intraday snapshot must be reconciled")
+            start, end = s.bounds()
+            if start < 0 or end > 32503680000 or start > s.received_at.timestamp():
+                raise ValueError("invalid snapshot trading date")
+            if any(
+                (o.market, o.symbol, o.interval) != (s.market, s.symbol, s.interval)
+                or not start <= o.time < end
+                or o.received_at != s.received_at
+                or (not s.reconciled and o.metadata.get("finality") != "provisional")
+                or o.time > s.received_at.timestamp() + 300
+                or any(
+                    v is None for v in (o.open, o.close, o.high, o.low, o.count, o.volume, o.value)
+                )
+                or o.count == 0
+                or o.volume == 0
+                or (o.low is not None and o.low <= 0)
+                for o in self.observations
+            ):
+                raise ValueError("snapshot requires complete minute candles within one trade day")
+        elif not self.observations:
+            raise ValueError("empty batch requires an intraday snapshot")
+        if not self.snapshot and any(
+            o.market == "tsetmc" and o.interval == "1m" for o in self.observations
+        ):
+            raise ValueError("TSETMC minute bars require trade-day snapshot scope")
         keys = [(o.market, o.symbol, o.interval, o.time) for o in self.observations]
         if len(keys) != len(set(keys)):
             raise ValueError("duplicate observation identity in batch")

@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS simple_marketdata.receipts (
     batch_id uuid PRIMARY KEY, sha256 text NOT NULL, accepted integer NOT NULL,
     stored_at timestamptz NOT NULL DEFAULT clock_timestamp()
 );
+CREATE TABLE IF NOT EXISTS simple_marketdata.intraday_snapshots (
+    market text NOT NULL, symbol text NOT NULL, interval text NOT NULL,
+    trading_date date NOT NULL, received_at timestamptz NOT NULL,
+    PRIMARY KEY (market, symbol, interval, trading_date)
+);
 CREATE OR REPLACE FUNCTION simple_marketdata.record_change() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
